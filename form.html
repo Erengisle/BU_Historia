@@ -4,151 +4,324 @@
   <meta charset="utf-8">
   <title>Anmälan till omprov – Historia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
-      background: #f0f0f0;
-      font-family: system-ui, Arial, sans-serif;
+      font-family: 'Space Grotesk', Helvetica Neue, Arial, sans-serif;
+      background: #F0EDE6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-      max-width: 800px;
-      min-height: 45vh;
-      margin: 16px auto;
-      padding: 24px;
-      background: white;
-      border-radius: 18px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    .header {
+      background: #0F1B2D;
+      padding: 28px 20px 22px;
+    }
+    .header-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #556070;
+      margin-bottom: 6px;
+    }
+    .header-title {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: #F7F4EE;
+      line-height: 1.2;
+    }
+    .header-sub {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #556070;
+      line-height: 1.55;
     }
 
-    h1 {
-      text-align: center;
-      font-size: 28px;
+    .info-box {
+      margin: 16px 14px 0;
+      padding: 13px 15px;
+      background: #fff;
+      border: 1px solid #DDD8D0;
+      border-radius: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
     }
+    .info-icon {
+      width: 30px; height: 30px;
+      background: #EBF0FA;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 15px;
+    }
+    .info-text { font-size: 13px; color: #556070; line-height: 1.6; }
+    .info-text strong { color: #0F1B2D; font-weight: 600; }
+
+    .card {
+      background: #fff;
+      margin: 14px 14px 0;
+      border-radius: 12px;
+      border: 1px solid #DDD8D0;
+    }
+    .card-body { padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
+
+    .field { display: flex; flex-direction: column; gap: 7px; }
 
     label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #556070;
+    }
+
+    input[type="email"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      font-family: 'Space Grotesk', Helvetica Neue, Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: #0F1B2D;
+      background: #F7F4EE;
+      border: 1px solid #DDD8D0;
+      border-radius: 9px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus {
+      border-color: #D4880A;
+      box-shadow: 0 0 0 3px rgba(212,136,10,0.12);
+      background: #fff;
+    }
+
+    .field-hint {
+      font-size: 12px;
+      color: #96A3B0;
+    }
+
+    .btn-submit {
       display: block;
-      margin-top: 18px;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      margin-top: 6px;
-      border-radius: 12px;
-      border: 1px solid #bbb;
-    }
-
-    button {
-      width: 100%;
-      margin-top: 24px;
+      width: calc(100% - 28px);
+      margin: 14px 14px 0;
       padding: 16px;
-      font-size: 20px;
+      background: #0F1B2D;
+      color: #F7F4EE;
+      font-family: 'Space Grotesk', Helvetica Neue, Arial, sans-serif;
+      font-size: 16px;
       font-weight: 700;
-      background: #1565C0;
-      color: white;
+      letter-spacing: 0.02em;
       border: none;
-      border-radius: 14px;
+      border-radius: 11px;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.1s;
+      transition: opacity 0.15s, transform 0.1s;
     }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.45; cursor: default; }
 
-    button:active { transform: scale(0.97); }
-    button:disabled { opacity: 0.6; }
+    .status-wrap { margin: 14px 14px 0; }
 
-    #status {
-      margin-top: 16px;
-      font-size: 17px;
+    .status-success {
+      padding: 18px;
+      background: #E8F5EE;
+      border: 1px solid #A8D8BC;
+      border-radius: 12px;
+      display: none;
+    }
+    .status-success-title {
+      font-family: 'Spectral', Georgia, serif;
+      font-size: 20px;
       font-weight: 600;
-      text-align: center;
+      color: #1A7A4A;
+      margin-bottom: 6px;
+    }
+    .status-success-body { font-size: 13px; color: #2A5A3A; line-height: 1.7; }
+
+    .status-error {
+      padding: 13px 15px;
+      background: #FDEAEA;
+      border: 1px solid #E8AAAA;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #B52020;
+      display: none;
     }
 
-    .hint {
-      margin-top: 10px;
-      font-size: 15px;
-      color: #555;
+    .footer-note {
+      margin: 16px 14px 32px;
+      font-size: 12px;
+      color: #96A3B0;
       text-align: center;
+      line-height: 1.6;
     }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>Anmälan till omprov – Historia</h1>
 
-    <form id="form">
-      <label>E-postadress</label>
-      <input type="email" id="email" required>
+  <div class="header">
+    <div class="header-eyebrow">Historia · Håkan Hildingsson</div>
+    <div class="header-title">Anmälan till omprov</div>
+    <div class="header-sub">Du och läraren får en bekräftelse via e-post.<br>Kalenderinbjudan skickas automatiskt.</div>
+  </div>
 
-      <label>Datum</label>
-      <input type="date" id="date" required>
-      <div class="hint">Endast möjliga onsdagar är valbara</div>
-
-      <label>Vilket prov?</label>
-      <select id="exam" required>
-        <option value="">Välj prov</option>
-        <option>Första världskriget</option>
-        <option>Mellankrigstiden</option>
-        <option>Andra världskriget</option>
-        <option>Europa efter världskrigen</option>
-        <option>Sverige efter världskrigen</option>
-        <option>Världen efter världskrigen</option>
-      </select>
-
-      <button id="submitBtn">Skicka anmälan</button>
-    </form>
-
-    <div id="status"></div>
-
-    <div class="hint">
-      Omprov genomförs onsdagar kl. 14:45 – 16:15
+  <div class="info-box">
+    <div class="info-icon">📅</div>
+    <div class="info-text">
+      <strong>Tänk på:</strong> Omprov bokas tidigast i februari.
+      Om du läser modersmål måste du vara ledig den berörda onsdagen.
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-body">
+
+      <div class="field">
+        <label for="email">Din e-postadress</label>
+        <input type="email" id="email" placeholder="fornamn.efternamn@edu.huddinge.se" required>
+      </div>
+
+      <div class="field">
+        <label for="exam">Vilket prov vill du göra om?</label>
+        <select id="exam" required>
+          <option value="">Välj prov…</option>
+          <option>Första världskriget</option>
+          <option>Mellankrigstiden</option>
+          <option>Andra världskriget</option>
+          <option>Europa efter världskrigen</option>
+          <option>Sverige efter världskrigen</option>
+          <option>Världen efter världskrigen</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="date">Datum för omprovet</label>
+        <input type="date" id="date" required>
+        <div class="field-hint">Välj en onsdag — ogiltiga datum korrigeras automatiskt.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="status-wrap">
+    <div class="status-success" id="successMsg">
+      <div class="status-success-title">Anmälan skickad!</div>
+      <div class="status-success-body" id="successBody"></div>
+    </div>
+    <div class="status-error" id="errorMsg"></div>
+  </div>
+
+  <button class="btn-submit" id="submitBtn">Skicka anmälan</button>
+
+  <div class="footer-note">
+    Omprov genomförs onsdagar kl. 14:45–16:15
+  </div>
+
 <script>
-  const dateInput = document.getElementById("date");
+  var dateInput   = document.getElementById('date');
+  var emailInput  = document.getElementById('email');
+  var examSelect  = document.getElementById('exam');
+  var submitBtn   = document.getElementById('submitBtn');
 
-  // Blockera tidigare datum
-  const today = new Date();
+  // Minsta datum = idag
+  var today = new Date();
   today.setHours(0,0,0,0);
-  dateInput.min = today.toISOString().split("T")[0];
+  dateInput.min = today.toISOString().split('T')[0];
 
-  const blockedWeeks = [1, 2, 9, 15];
+  var blockedWeeks = [1, 2, 9, 15];
+
   function isBlockedWeek(w) {
-    return blockedWeeks.includes(w) || (w >= 23 && w <= 38);
+    return blockedWeeks.indexOf(w) !== -1 || (w >= 23 && w <= 38);
   }
 
   function isoWeek(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const day = d.getUTCDay() || 7;
+    var day = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - day);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   }
 
   function nextValidWednesday(fromDate) {
-    const d = new Date(fromDate);
+    var d = new Date(fromDate);
     while (true) {
       d.setDate(d.getDate() + 1);
-      if (d.getDay() === 3 && !isBlockedWeek(isoWeek(d))) {
-        return d;
-      }
+      if (d.getDay() === 3 && !isBlockedWeek(isoWeek(d))) return d;
     }
   }
 
-  dateInput.addEventListener("change", () => {
-    const chosen = new Date(dateInput.value);
+  function formatDate(d) {
+    return d.toLocaleDateString('sv-SE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
 
+  dateInput.addEventListener('change', function() {
+    var chosen = new Date(dateInput.value + 'T12:00:00');
     if (chosen.getDay() !== 3 || isBlockedWeek(isoWeek(chosen))) {
-      const next = nextValidWednesday(chosen);
-      dateInput.value = next.toISOString().split("T")[0];
-      alert("Ogiltigt datum. Närmaste möjliga onsdag har valts automatiskt.");
+      var next = nextValidWednesday(chosen);
+      dateInput.value = next.toISOString().split('T')[0];
     }
   });
+
+  submitBtn.addEventListener('click', function() {
+    if (!emailInput.value || !examSelect.value || !dateInput.value) {
+      emailInput.reportValidity();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Skickar…';
+
+    var payload = JSON.stringify({
+      email: emailInput.value,
+      exam:  examSelect.value,
+      date:  dateInput.value,
+    });
+
+    fetch(window.location.href, {
+      method: 'POST',
+      body: payload,
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (json.success) {
+        showSuccess();
+      } else {
+        showError('Något gick fel: ' + (json.error || 'okänt fel'));
+      }
+    })
+    .catch(function() {
+      showError('Kunde inte nå servern. Försök igen eller kontakta läraren.');
+    });
+  });
+
+  function showSuccess() {
+    document.querySelector('.card').style.display = 'none';
+    submitBtn.style.display = 'none';
+    var d = new Date(dateInput.value + 'T12:00:00');
+    document.getElementById('successBody').innerHTML =
+      'Du är anmäld till omprov på:<br><br>' +
+      '<strong>' + examSelect.value + '</strong><br>' +
+      formatDate(d) + ', kl. 14:45–16:15<br><br>' +
+      'En bekräftelse har skickats till <strong>' + emailInput.value + '</strong>.';
+    document.getElementById('successMsg').style.display = 'block';
+  }
+
+  function showError(msg) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Skicka anmälan';
+    var el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
 </script>
 </body>
 </html>

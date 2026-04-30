@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --parchment: #F7F4EE;
+      --white:     #FFFFFF;
+      --ink:       #0F1B2D;
+      --slate:     #556070;
+      --mist:      #96A3B0;
+      --amber:     #D4880A;
+      --fog:       #DDD8D0;
+      --crimson:   #B52020;
+      --emerald:   #1A7A4A;
+    }
+
+    body {
+      font-family: 'Google Sans', Arial, sans-serif;
+      font-size: 13px;
+      background: var(--parchment);
+      color: var(--ink);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: var(--ink);
+      padding: 12px 14px 10px;
+      flex-shrink: 0;
+    }
+    .header-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mist);
+      margin-bottom: 2px;
+    }
+    .header-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+
+    /* Uppgiftsväljare */
+    .uppgift-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--fog);
+      padding: 10px 12px;
+      flex-shrink: 0;
+    }
+    .uppgift-bar label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--mist);
+      display: block;
+      margin-bottom: 5px;
+    }
+    .uppgift-bar select {
+      width: 100%;
+      border: 1px solid var(--fog);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: var(--ink);
+      background: var(--white);
+      cursor: pointer;
+    }
+    .saknas-varning {
+      margin-top: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--crimson);
+    }
+
+    /* Vy-knappar */
+    .vy-knappar {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+      background: var(--white);
+      border-bottom: 1px solid var(--fog);
+      flex-shrink: 0;
+    }
+    .vy-knapp {
+      flex: 1;
+      padding: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--fog);
+      border-radius: 5px;
+      background: var(--parchment);
+      color: var(--slate);
+      cursor: pointer;
+    }
+    .vy-knapp.aktiv {
+      background: var(--ink);
+      color: var(--parchment);
+      border-color: var(--ink);
+    }
+
+    /* Elevlista */
+    .elevlista {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 10px;
+    }
+
+    .elev-rad {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--white);
+      border: 1px solid var(--fog);
+      border-radius: 6px;
+      padding: 7px 9px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: border-color 0.1s;
+    }
+    .elev-rad:hover { border-color: var(--slate); }
+    .elev-rad.expanderad { border-color: var(--ink); }
+
+    .elev-namn {
+      flex: 1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .elev-badges {
+      display: flex;
+      gap: 3px;
+    }
+
+    /* Betyg */
+    .betyg-select {
+      border: none;
+      outline: none;
+      border-radius: 5px;
+      width: 40px;
+      height: 28px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .grade-A  { background: #E8F5EE; color: #1A7A4A; }
+    .grade-C  { background: #EBF0FA; color: #2355A0; }
+    .grade-E  { background: #FDF0E8; color: #C05A20; }
+    .grade-F  { background: #FDEAEA; color: #B52020; }
+    .grade-da { background: #F0EDE6; color: #96A3B0; }
+
+    /* Detaljvy (expanderad elev) */
+    .elev-detalj {
+      background: var(--parchment);
+      border: 1px solid var(--fog);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      padding: 10px;
+      margin-top: -4px;
+      margin-bottom: 4px;
+    }
+    .detalj-uppgift {
+      margin-bottom: 8px;
+    }
+    .detalj-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--mist);
+      margin-bottom: 3px;
+    }
+    .detalj-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .detalj-uppgift-naam {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      flex: 1;
+    }
+    textarea {
+      width: 100%;
+      border: 1px solid var(--fog);
+      border-radius: 5px;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--ink);
+      background: var(--white);
+      resize: vertical;
+      line-height: 1.4;
+    }
+    textarea::placeholder { color: var(--mist); }
+
+    .intern-box {
+      background: #FFFBF0;
+      border: 1px dashed var(--amber);
+      border-radius: 6px;
+      padding: 8px;
+      margin-top: 6px;
+    }
+    .intern-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--amber);
+      margin-bottom: 4px;
+    }
+
+    /* Spara-raden */
+    .spara-rad {
+      padding: 10px 12px;
+      background: var(--white);
+      border-top: 1px solid var(--fog);
+      flex-shrink: 0;
+    }
+    .spara-knapp {
+      width: 100%;
+      padding: 9px;
+      background: var(--ink);
+      color: var(--parchment);
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .spara-knapp:disabled { opacity: 0.6; cursor: default; }
+    .spara-knapp.sparat { background: var(--emerald); }
+    .status-text {
+      font-size: 11px;
+      color: var(--mist);
+      text-align: center;
+      margin-top: 5px;
+    }
+    .status-text.fel { color: var(--crimson); }
+
+    /* Laddare */
+    .laddar {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--mist);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Historia · Vt 2026</div>
+  <div class="header-title">Betygspanel</div>
+</div>
+
+<div id="app">
+  <div class="laddar">Laddar elevdata…</div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+var state = {
+  elever: [],
+  uppgifter: [],
+  valdUppgift: 0,        // 0–2
+  expanderadElev: null,  // elev-index eller null
+  vy: 'uppgift',         // 'uppgift' | 'elev'
+  sparar: false,
+  sparatOk: false,
+  felmeddelande: '',
+};
+
+// ── Init ───────────────────────────────────────────────────
+google.script.run
+  .withSuccessHandler(function(data) {
+    if (data.fel) { visaFel(data.fel); return; }
+    state.elever    = data.elever;
+    state.uppgifter = data.uppgifter;
+    render();
+  })
+  .withFailureHandler(function(err) { visaFel(err.message); })
+  .hamtaElevdata();
+
+// ── Render ─────────────────────────────────────────────────
+function render() {
+  var app = document.getElementById('app');
+  app.innerHTML = '';
+  app.style.display = 'flex';
+  app.style.flexDirection = 'column';
+  app.style.flex = '1';
+  app.style.overflow = 'hidden';
+
+  // Vy-knappar
+  var vyBar = el('div', { className: 'vy-knappar' });
+  vyBar.appendChild(knapp('Per uppgift', state.vy === 'uppgift', function() { state.vy = 'uppgift'; state.expanderadElev = null; render(); }));
+  vyBar.appendChild(knapp('Per elev', state.vy === 'elev', function() { state.vy = 'elev'; state.expanderadElev = null; render(); }));
+  app.appendChild(vyBar);
+
+  if (state.vy === 'uppgift') renderVyUppgift(app);
+  else renderVyElev(app);
+
+  // Spara-rad
+  renderSparaRad(app);
+}
+
+// ── Vy: per uppgift ────────────────────────────────────────
+function renderVyUppgift(app) {
+  // Uppgiftsväljare
+  var bar = el('div', { className: 'uppgift-bar' });
+  var lbl = el('label'); lbl.textContent = 'Uppgift'; bar.appendChild(lbl);
+  var sel = el('select');
+  state.uppgifter.forEach(function(u, i) {
+    var opt = el('option'); opt.value = i; opt.textContent = u;
+    if (i === state.valdUppgift) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', function() { state.valdUppgift = Number(this.value); render(); });
+  bar.appendChild(sel);
+
+  var saknar = state.elever.filter(function(e) { return e.betyg[state.valdUppgift] === '–'; }).length;
+  if (saknar > 0) {
+    var warn = el('div', { className: 'saknas-varning' });
+    warn.textContent = '⚠ ' + saknar + ' elev' + (saknar > 1 ? 'er' : '') + ' saknar betyg';
+    bar.appendChild(warn);
+  }
+  app.appendChild(bar);
+
+  // Elevlista
+  var lista = el('div', { className: 'elevlista' });
+  state.elever.forEach(function(elev, idx) {
+    var rad = el('div', { className: 'elev-rad' });
+    var namn = el('span', { className: 'elev-namn' }); namn.textContent = elev.namn; rad.appendChild(namn);
+
+    var bSel = betygSelect(elev.betyg[state.valdUppgift], function(val) {
+      state.elever[idx].betyg[state.valdUppgift] = val;
+      render();
+    });
+    rad.appendChild(bSel);
+    lista.appendChild(rad);
+  });
+  app.appendChild(lista);
+}
+
+// ── Vy: per elev ──────────────────────────────────────────
+function renderVyElev(app) {
+  var lista = el('div', { className: 'elevlista' });
+
+  state.elever.forEach(function(elev, idx) {
+    var expanderad = state.expanderadElev === idx;
+
+    // Rad
+    var rad = el('div', { className: 'elev-rad' + (expanderad ? ' expanderad' : '') });
+    rad.addEventListener('click', function(e) {
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+      state.expanderadElev = expanderad ? null : idx;
+      render();
+    });
+
+    var namn = el('span', { className: 'elev-namn' }); namn.textContent = elev.namn; rad.appendChild(namn);
+
+    // Mini-badges för alla uppgifter
+    var badges = el('div', { className: 'elev-badges' });
+    elev.betyg.forEach(function(b) {
+      var badge = el('span', { className: 'betyg-select ' + gradeKlass(b) });
+      badge.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:28px;height:24px;border-radius:5px;font-size:11px;font-weight:700;';
+      badge.textContent = b;
+      badges.appendChild(badge);
+    });
+    rad.appendChild(badges);
+    lista.appendChild(rad);
+
+    // Detaljvy
+    if (expanderad) {
+      var detalj = el('div', { className: 'elev-detalj' });
+
+      state.uppgifter.forEach(function(uppgift, i) {
+        var block = el('div', { className: 'detalj-uppgift' });
+
+        var row = el('div', { className: 'detalj-row' });
+        var uNamn = el('span', { className: 'detalj-uppgift-naam' }); uNamn.textContent = uppgift; row.appendChild(uNamn);
+        row.appendChild(betygSelect(elev.betyg[i], function(val) { state.elever[idx].betyg[i] = val; render(); }));
+        block.appendChild(row);
+
+        var komLbl = el('div', { className: 'detalj-label' }); komLbl.textContent = 'Kommentar till eleven'; block.appendChild(komLbl);
+        var ta = el('textarea'); ta.rows = 2; ta.placeholder = 'Kommentar som skickas till eleven…';
+        ta.value = elev.kommentar[i];
+        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; });
+        block.appendChild(ta);
+        detalj.appendChild(block);
+      });
+
+      // Intern anteckning
+      var internBox = el('div', { className: 'intern-box' });
+      var internLbl = el('div', { className: 'intern-label' }); internLbl.textContent = '🔒 Intern anteckning'; internBox.appendChild(internLbl);
+      var internTa = el('textarea'); internTa.rows = 2; internTa.placeholder = 'Bara för dig — syns inte för eleven';
+      internTa.value = elev.internKommentar;
+      internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
+      internBox.appendChild(internTa);
+      detalj.appendChild(internBox);
+
+      lista.appendChild(detalj);
+    }
+  });
+
+  app.appendChild(lista);
+}
+
+// ── Spara-rad ──────────────────────────────────────────────
+function renderSparaRad(app) {
+  var rad = el('div', { className: 'spara-rad' });
+  var btn = el('button', { className: 'spara-knapp' + (state.sparatOk ? ' sparat' : '') });
+  btn.textContent = state.sparar ? 'Sparar…' : (state.sparatOk ? '✓ Sparat!' : 'Spara till Sheet');
+  btn.disabled = state.sparar;
+  btn.addEventListener('click', sparaAlla);
+  rad.appendChild(btn);
+
+  if (state.felmeddelande) {
+    var ft = el('div', { className: 'status-text fel' }); ft.textContent = state.felmeddelande; rad.appendChild(ft);
+  } else {
+    var st = el('div', { className: 'status-text' }); st.textContent = state.elever.length + ' elever · ' + state.uppgifter.length + ' uppgifter'; rad.appendChild(st);
+  }
+  app.appendChild(rad);
+}
+
+// ── Spara ──────────────────────────────────────────────────
+function sparaAlla() {
+  state.sparar = true; state.felmeddelande = ''; render();
+  google.script.run
+    .withSuccessHandler(function() {
+      state.sparar = false; state.sparatOk = true; render();
+      setTimeout(function() { state.sparatOk = false; render(); }, 2500);
+    })
+    .withFailureHandler(function(err) {
+      state.sparar = false; state.felmeddelande = 'Fel: ' + err.message; render();
+    })
+    .sparaAllaElever(state.elever);
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function el(tag, props) {
+  var e = document.createElement(tag);
+  if (props) Object.keys(props).forEach(function(k) { e[k] = props[k]; });
+  return e;
+}
+
+function gradeKlass(g) {
+  if (g === 'A') return 'grade-A';
+  if (g === 'C') return 'grade-C';
+  if (g === 'E') return 'grade-E';
+  if (g === 'F') return 'grade-F';
+  return 'grade-da';
+}
+
+function betygSelect(value, onChange) {
+  var sel = el('select', { className: 'betyg-select ' + gradeKlass(value) });
+  ['–','F','E','C','A'].forEach(function(b) {
+    var opt = el('option'); opt.value = b; opt.textContent = b;
+    if (b === value) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', function(e) {
+    e.stopPropagation();
+    sel.className = 'betyg-select ' + gradeKlass(this.value);
+    onChange(this.value);
+  });
+  return sel;
+}
+
+function knapp(text, aktiv, onClick) {
+  var b = el('button', { className: 'vy-knapp' + (aktiv ? ' aktiv' : '') });
+  b.textContent = text; b.addEventListener('click', onClick); return b;
+}
+
+function visaFel(msg) {
+  document.getElementById('app').innerHTML = '<div style="padding:20px;color:#B52020;font-size:13px;">⚠ ' + msg + '</div>';
+}
+</script>
+</body>
+</html>
