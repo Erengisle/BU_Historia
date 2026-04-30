@@ -25,6 +25,8 @@ function onOpen() {
     .createMenu('Historia')
     .addItem('Öppna betygspanel', 'openSidebar')
     .addSeparator()
+    .addItem('Skicka resultatmejl till alla', 'skickaResultatmail')
+    .addSeparator()
     .addItem('Skapa QR-kod (omprov)', 'skapaQRkod')
     .addToUi();
 }
@@ -44,7 +46,7 @@ function hamtaElevdata() {
 
     if (!sheet) {
       sheet = ss.insertSheet(RESULTAT_SHEET);
-      var headers = ['Namn'];
+      var headers = ['Namn', 'E-post'];
       UPPGIFTER.forEach(function(u) {
         headers.push(u + ' – Betyg');
         headers.push(u + ' – Kommentar');
@@ -61,19 +63,20 @@ function hamtaElevdata() {
       var row = data[i];
       if (!row[0]) continue;
 
-      var betyg      = [];
-      var kommentar  = [];
+      var betyg     = [];
+      var kommentar = [];
       for (var j = 0; j < UPPGIFTER.length; j++) {
-        betyg.push(row[1 + j * 2] || '–');
-        kommentar.push(row[2 + j * 2] || '');
+        betyg.push(row[2 + j * 2] || '–');
+        kommentar.push(row[3 + j * 2] || '');
       }
 
       elever.push({
-        radIndex:       i,          // 0-baserat radindex i data-arrayen
-        namn:           row[0],
-        betyg:          betyg,
-        kommentar:      kommentar,
-        internKommentar: row[1 + UPPGIFTER.length * 2] || '',
+        radIndex:        i,
+        namn:            row[0],
+        epost:           row[1] || '',
+        betyg:           betyg,
+        kommentar:       kommentar,
+        internKommentar: row[2 + UPPGIFTER.length * 2] || '',
       });
     }
 
@@ -93,14 +96,63 @@ function sparaAllaElever(elever) {
 
   elever.forEach(function(elev) {
     var rowNum  = elev.radIndex + 1;   // getRange är 1-baserat
-    var rowData = [elev.namn];
+    var rowData = [elev.namn, elev.epost || ''];
     for (var j = 0; j < UPPGIFTER.length; j++) {
-      rowData.push(elev.betyg[j]      || '–');
-      rowData.push(elev.kommentar[j]  || '');
+      rowData.push(elev.betyg[j]     || '–');
+      rowData.push(elev.kommentar[j] || '');
     }
     rowData.push(elev.internKommentar || '');
     sheet.getRange(rowNum, 1, 1, rowData.length).setValues([rowData]);
   });
+}
+
+// ---------- SKICKA RESULTATMEJL ----------
+// Skickar HTML-mejl till alla elever i Resultat-sheetet som har en e-postadress
+function skickaResultatmail() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(RESULTAT_SHEET);
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('Sheet saknas: ' + RESULTAT_SHEET);
+    return;
+  }
+
+  var data     = sheet.getDataRange().getValues();
+  var skickade = 0;
+  var hoppade  = 0;
+  var fel      = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row  = data[i];
+    var namn = row[0];
+    var epost = row[1];
+    if (!namn) continue;
+    if (!epost) { hoppade++; continue; }
+
+    var betyg     = [];
+    var kommentar = [];
+    for (var j = 0; j < UPPGIFTER.length; j++) {
+      betyg.push(row[2 + j * 2] || '–');
+      kommentar.push(row[3 + j * 2] || '');
+    }
+
+    try {
+      var html = buildHtmlEmail(namn, betyg, kommentar);
+      MailApp.sendEmail({
+        to:       epost,
+        subject:  'Dina resultat i Historia',
+        htmlBody: html,
+      });
+      skickade++;
+    } catch (err) {
+      fel.push(namn + ': ' + err.message);
+    }
+  }
+
+  var sammanfattning = 'Klart! Skickade mejl till ' + skickade + ' elev' + (skickade !== 1 ? 'er' : '') + '.';
+  if (hoppade > 0) sammanfattning += '\n(' + hoppade + ' elev' + (hoppade !== 1 ? 'er' : '') + ' saknade e-postadress och hoppades över.)';
+  if (fel.length > 0) sammanfattning += '\n\nFel:\n' + fel.join('\n');
+
+  SpreadsheetApp.getUi().alert(sammanfattning);
 }
 
 // ---------- VISA FORMULÄR ----------

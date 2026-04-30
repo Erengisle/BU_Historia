@@ -99,6 +99,25 @@ function buildHtmlEmail(studentName, results, comments) {
       '</tr>' +
     '</table>';
 
+  // ── Provresultat-rader ────────────────────────────────
+  var provRows = '';
+  results.forEach(function(grade, i) {
+    var provNamn = UPPGIFTER[i] || ('Prov ' + (i + 1));
+    var comment  = (comments && comments[i]) ? comments[i] : '';
+    var isLast   = (i === results.length - 1);
+
+    provRows +=
+      '<tr><td style="padding:12px 16px;' + (isLast ? '' : 'border-bottom:1px solid #DDD8D0;') + '">' +
+        '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
+          '<td width="40" style="vertical-align:middle;">' + gradeBadge(grade, 36) + '</td>' +
+          '<td style="vertical-align:middle;padding-left:12px;">' +
+            '<p style="margin:0;font-size:14px;font-weight:600;color:#0F1B2D;">' + provNamn + '</p>' +
+            (comment ? '<p style="margin:4px 0 0;font-size:12px;color:#556070;line-height:1.5;">' + comment + '</p>' : '') +
+          '</td>' +
+        '</tr></table>' +
+      '</td></tr>';
+  });
+
   // ── Sätt ihop hela mejlet ─────────────────────────────
   return '<!DOCTYPE html>' +
   '<html lang="sv"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
