@@ -7,9 +7,6 @@ const RESULTAT_SHEET = 'Resultat';
 const TEACHER_EMAIL = 'hakan.hildingsson@edu.huddinge.se';
 const CALENDAR_ID   = 'primary';
 
-// Uppdatera till den deployade webb-appens URL efter publicering
-const OMPROV_URL = 'https://script.google.com/macros/s/ERSÄTT_MED_RÄTT_URL/exec';
-
 const UPPGIFTER = [
   'Första världskriget',
   'Mellankrigstiden',
