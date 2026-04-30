@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Förhandsgranskning – BU Historia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+
+    nav {
+      background: #0f0f1a;
+      padding: 14px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #333;
+    }
+    nav h1 { font-size: 14px; font-weight: 600; color: #aaa; flex: 1; white-space: nowrap; }
+
+    .tab {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: transparent;
+      color: #bbb;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover { border-color: #888; color: #eee; }
+    .tab.active { background: #D4880A; border-color: #D4880A; color: #fff; font-weight: 600; }
+
+    .view { display: none; width: 100%; }
+    .view.active { display: block; }
+
+    /* E-post vy */
+    .email-wrap {
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .scenario-list {
+      width: 200px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .scenario-list h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 4px; }
+    .scenario-btn {
+      padding: 9px 12px;
+      border-radius: 7px;
+      border: 1px solid #333;
+      background: #0f0f1a;
+      color: #bbb;
+      font-size: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .scenario-btn:hover { border-color: #666; color: #eee; }
+    .scenario-btn.active { border-color: #D4880A; background: rgba(212,136,10,0.12); color: #fff; }
+    .scenario-btn small { display: block; color: #666; font-size: 11px; margin-top: 2px; }
+    .scenario-btn.active small { color: #D4880A; }
+
+    .email-frame-wrap {
+      flex: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+    #emailFrame {
+      width: 100%;
+      height: calc(100vh - 120px);
+      border: none;
+      display: block;
+      background: #F0EDE6;
+    }
+
+    /* Formulär vy */
+    #formFrame {
+      width: 100%;
+      height: calc(100vh - 57px);
+      border: none;
+      display: block;
+    }
+
+    /* Sidebar vy */
+    .sidebar-wrap {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .sidebar-note {
+      max-width: 340px;
+      background: #0f0f1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #aaa;
+    }
+    .sidebar-note h2 { font-size: 13px; font-weight: 700; color: #eee; margin-bottom: 10px; }
+    .sidebar-note code { background: #1e1e30; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #D4880A; }
+    .sidebar-note ul { padding-left: 16px; margin-top: 8px; }
+    .sidebar-note li { margin-bottom: 6px; }
+    #sidebarFrame {
+      width: 300px;
+      height: calc(100vh - 97px);
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #F7F4EE;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <h1>BU Historia — Förhandsgranskning</h1>
+  <button class="tab active" onclick="visa('email', this)">📧 Resultatmejl</button>
+  <button class="tab" onclick="visa('form', this)">📋 Omprovformulär</button>
+  <button class="tab" onclick="visa('sidebar', this)">🗂 Betygspanel</button>
+</nav>
+
+<!-- ═══ E-POST ═══ -->
+<div class="view active" id="view-email">
+  <div class="email-wrap">
+    <div class="scenario-list">
+      <h2>Testscenarier</h2>
+      <button class="scenario-btn active" onclick="visaScenario(0, this)">
+        Klarar kursen
+        <small>4/6 godkända</small>
+      </button>
+      <button class="scenario-btn" onclick="visaScenario(1, this)">
+        Nästan — 3/6
+        <small>Varning nivå 1</small>
+      </button>
+      <button class="scenario-btn" onclick="visaScenario(2, this)">
+        Tre underkända
+        <small>Varning nivå 2</small>
+      </button>
+      <button class="scenario-btn" onclick="visaScenario(3, this)">
+        Fyra underkända
+        <small>Varning nivå 3 (kritisk)</small>
+      </button>
+      <button class="scenario-btn" onclick="visaScenario(4, this)">
+        Alla A
+        <small>Toppresultat</small>
+      </button>
+      <button class="scenario-btn" onclick="visaScenario(5, this)">
+        Ingen resultat
+        <small>Inga prov gjorda</small>
+      </button>
+    </div>
+    <div class="email-frame-wrap">
+      <iframe id="emailFrame"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FORMULÄR ═══ -->
+<div class="view" id="view-form">
+  <iframe id="formFrame" src="form.html"></iframe>
+</div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="view" id="view-sidebar">
+  <div class="sidebar-wrap">
+    <div class="sidebar-note">
+      <h2>Betygspanelen (sidebar.html)</h2>
+      <p>Sidopanelen körs inuti Google Sheets och kommunicerar med Apps Script via <code>google.script.run</code>. Den kan inte renderas fristående utan Sheets-miljön.</p>
+      <p style="margin-top:10px;">För att testa den live:</p>
+      <ul>
+        <li>Öppna Google Sheets-dokumentet</li>
+        <li>Gå till menyn <strong>Historia → Öppna betygspanel</strong></li>
+        <li>Panelen laddas i höger sidofält</li>
+      </ul>
+      <p style="margin-top:10px;">Nedan visas en statisk förhandsvy av HTML-strukturen (utan data från backend).</p>
+    </div>
+    <iframe id="sidebarFrame" src="sidebar.html"></iframe>
+  </div>
+</div>
+
+<script>
+// ── Konstanter (spegel av Code.gs) ──────────────────────────
+var UPPGIFTER = [
+  'Första världskriget',
+  'Mellankrigstiden',
+  'Andra världskriget',
+  'Europa efter världskrigen',
+  'Sverige efter världskrigen',
+  'Världen efter världskrigen',
+];
+var TEACHER_EMAIL = 'hakan.hildingsson@edu.huddinge.se';
+var OMPROV_URL = '#anmalan';
+
+// ── Testdata ─────────────────────────────────────────────────
+var scenarier = [
+  {
+    namn: 'Alicia Bergström',
+    betyg: ['A', 'C', 'F', 'E', 'C', '–'],
+    kommentar: [
+      'Riktigt bra analys av orsakerna till kriget!',
+      'Bra resonemang, men kunde fördjupat dig mer om ekonomin.',
+      'Ej genomfört — boka omprov.',
+      'Godkänt. Fokus på konsekvenserna var tydligt.',
+      '',
+      '',
+    ],
+  },
+  {
+    namn: 'Marcus Lindqvist',
+    betyg: ['F', 'F', 'E', '–', '–', '–'],
+    kommentar: ['', '', 'Precis godkänt.', '', '', ''],
+  },
+  {
+    namn: 'Sofia Eriksson',
+    betyg: ['F', 'F', 'F', 'E', '–', '–'],
+    kommentar: ['', '', '', 'Bra jobbat med sista avsnittet.', '', ''],
+  },
+  {
+    namn: 'Johan Nilsson',
+    betyg: ['F', 'F', 'F', 'F', '–', '–'],
+    kommentar: Array(6).fill(''),
+  },
+  {
+    namn: 'Emma Karlsson',
+    betyg: ['A', 'A', 'A', 'A', 'A', 'A'],
+    kommentar: [
+      'Utmärkt!',
+      'Imponerande djup i analysen.',
+      'Väl beskrivet.',
+      'Mycket bra.',
+      'Topprestanda.',
+      'Fantastiskt jobbat hela kursen!',
+    ],
+  },
+  {
+    namn: 'Nils Pettersson',
+    betyg: ['–', '–', '–', '–', '–', '–'],
+    kommentar: Array(6).fill(''),
+  },
+];
+
+// ── buildHtmlEmail (portad från buildHtmlEmail.gs) ─────────
+function gradeColor(g) {
+  if (g === 'A') return { bg: '#E8F5EE', color: '#1A7A4A' };
+  if (g === 'C') return { bg: '#EBF0FA', color: '#2355A0' };
+  if (g === 'E') return { bg: '#FDF0E8', color: '#C05A20' };
+  return { bg: '#F0EDE6', color: '#96A3B0' };
+}
+
+function gradeBadge(g, size) {
+  size = size || 36;
+  var c = gradeColor(g);
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;' +
+    'width:' + size + 'px;height:' + size + 'px;border-radius:6px;' +
+    'background:' + c.bg + ';font-family:Georgia,serif;font-size:' + Math.round(size * 0.54) + 'px;' +
+    'font-weight:700;color:' + c.color + ';line-height:1;">' + g + '</span>';
+}
+
+function buildHtmlEmail(studentName, results, comments) {
+  var count = results.filter(function(r) { return ['E','C','A'].indexOf(r) !== -1; }).length;
+
+  var tcBg    = count >= 4 ? '#E8F5EE' : (count === 3 ? '#FDF8D0' : '#FDEAEA');
+  var tcColor = count >= 4 ? '#1A7A4A' : (count === 3 ? '#A07800' : '#B52020');
+  var tcLabel = count >= 4 ? 'Du klarar kursen' : (count === 3 ? 'Nästan — ett prov kvar' : 'Fler godkända behövs');
+
+  var first2Fail = ['E','C','A'].indexOf(results[0]) === -1 && ['E','C','A'].indexOf(results[1]) === -1;
+  var totalFail  = results.filter(function(r) { return ['E','C','A'].indexOf(r) === -1; }).length;
+  var warnLevel  = 0;
+  if (first2Fail) {
+    if (totalFail >= 4)      warnLevel = 3;
+    else if (totalFail >= 3) warnLevel = 2;
+    else                     warnLevel = 1;
+  }
+
+  var warningHtml = '';
+  if (warnLevel > 0) {
+    var warnTitle, warnBody, ctaLabel, ctaHref, ctaBg, ctaColor, tipsHtml;
+    var tips =
+      '<table cellpadding="0" cellspacing="0" style="width:100%;margin:10px 0 14px;">' +
+        '<tr><td style="padding:6px 0;font-size:13px;color:#0F1B2D;">📚 <strong>Har du planerat dina studier?</strong> Sprid ut läsningen — plugga inte bara dagen innan.</td></tr>' +
+        '<tr><td style="padding:6px 0;font-size:13px;color:#0F1B2D;">💻 <strong>Har du tittat på materialet i Google Classroom?</strong> Presentationer och filmer finns där.</td></tr>' +
+        '<tr><td style="padding:6px 0;font-size:13px;color:#0F1B2D;">📖 <strong>Har du gjort dina läxor?</strong> Det gör lektionerna lättare att hänga med på.</td></tr>' +
+        '<tr><td style="padding:6px 0;font-size:13px;color:#0F1B2D;">❓ <strong>Har du frågat om du inte förstått?</strong> Det är aldrig fel att höra av sig.</td></tr>' +
+      '</table>';
+
+    if (warnLevel === 1) {
+      warnTitle = 'Du har inte klarat de två första proven ännu';
+      warnBody  = 'Det är helt okej — men det är bra att börja tänka på din studieteknik och eventuellt boka in ett omprov.';
+      ctaLabel  = 'Anmäl dig till omprov →';
+      ctaHref   = OMPROV_URL;
+      ctaBg = '#B52020'; ctaColor = '#fff';
+      tipsHtml  = tips;
+    } else if (warnLevel === 2) {
+      warnTitle = 'Du har inte klarat tre prov — det är dags att agera';
+      warnBody  = 'För att klara kursen krävs minst 4 godkända prov. Du behöver höra av dig till mig så vi kan lägga upp en plan tillsammans.';
+      ctaLabel  = 'Anmäl dig till omprov →';
+      ctaHref   = OMPROV_URL;
+      ctaBg = '#B52020'; ctaColor = '#fff';
+      tipsHtml  = tips;
+    } else {
+      warnTitle = 'Du riskerar att inte klara kursen';
+      warnBody  = 'Du har inte klarat fyra eller fler prov. Det är nu mycket viktigt att du hör av dig till mig — vi måste prata om vad som krävs för att du ska ha en chans att klara kursen.';
+      ctaLabel  = 'Kontakta läraren direkt →';
+      ctaHref   = 'mailto:' + TEACHER_EMAIL;
+      ctaBg = '#F7F4EE'; ctaColor = '#7A1010';
+      tipsHtml  = '';
+    }
+
+    warningHtml =
+      '<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border-radius:10px;overflow:hidden;border:1px solid #E8AAAA;">' +
+        '<tr><td style="background:#FDEAEA;padding:16px;">' +
+          '<p style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:#7A1010;margin:0 0 6px;">' + warnTitle + '</p>' +
+          '<p style="font-size:13px;color:#8B2020;margin:0;line-height:1.6;">' + warnBody + '</p>' +
+          tipsHtml +
+          '<a href="' + ctaHref + '" style="display:block;padding:12px 16px;background:' + ctaBg + ';color:' + ctaColor + ';text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;text-align:center;">' + ctaLabel + '</a>' +
+        '</td></tr>' +
+      '</table>';
+  }
+
+  var counterHtml =
+    '<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background:' + tcBg + ';border-radius:10px;">' +
+      '<tr><td style="padding:14px 18px;">' +
+        '<span style="font-family:Georgia,serif;font-size:32px;font-weight:700;color:' + tcColor + ';">' + count + '/6</span>' +
+        '<span style="font-size:13px;color:' + tcColor + ';font-weight:600;margin-left:10px;">' + tcLabel + '</span>' +
+      '</td></tr>' +
+    '</table>';
+
+  var provRows = '';
+  results.forEach(function(grade, i) {
+    var provNamn = UPPGIFTER[i] || ('Prov ' + (i + 1));
+    var comment  = (comments && comments[i]) ? comments[i] : '';
+    var isLast   = (i === results.length - 1);
+    provRows +=
+      '<tr><td style="padding:12px 16px;' + (isLast ? '' : 'border-bottom:1px solid #DDD8D0;') + '">' +
+        '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
+          '<td width="40" style="vertical-align:middle;">' + gradeBadge(grade, 36) + '</td>' +
+          '<td style="vertical-align:middle;padding-left:12px;">' +
+            '<p style="margin:0;font-size:14px;font-weight:600;color:#0F1B2D;">' + provNamn + '</p>' +
+            (comment ? '<p style="margin:4px 0 0;font-size:12px;color:#556070;line-height:1.5;">' + comment + '</p>' : '') +
+          '</td>' +
+        '</tr></table>' +
+      '</td></tr>';
+  });
+
+  return '<!DOCTYPE html>' +
+  '<html lang="sv"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+  '<body style="margin:0;padding:0;background:#F0EDE6;font-family:Helvetica Neue,Arial,sans-serif;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0">' +
+    '<tr><td align="center" style="padding:20px 12px 40px;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">' +
+      '<tr><td style="background:#0F1B2D;border-radius:12px 12px 0 0;padding:24px 24px 20px;">' +
+        '<p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#556070;">Historia · Grundskola · Vt 2026</p>' +
+        '<p style="margin:0;font-family:Georgia,serif;font-size:24px;font-weight:700;color:#F7F4EE;line-height:1.2;">' + studentName + '</p>' +
+        '<p style="margin:6px 0 0;font-size:13px;color:#556070;">Dina resultat och kommentarer</p>' +
+      '</td></tr>' +
+      '<tr><td style="background:#F7F4EE;padding:16px;border-radius:0 0 12px 12px;">' +
+        warningHtml +
+        counterHtml +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;overflow:hidden;margin-bottom:16px;">' +
+          provRows +
+        '</table>' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;margin-bottom:8px;">' +
+        '<tr><td style="padding:14px 16px;">' +
+          '<p style="margin:0;font-family:Georgia,serif;font-style:italic;font-size:13px;color:#556070;line-height:1.75;">' +
+            'För godkänt på kursen krävs 4 av 6 godkända prov. Omprov planeras vid behov — alltid onsdagar kl. 14:45–16:15.' +
+          '</p>' +
+        '</td></tr></table>' +
+        '<p style="margin:12px 0 0;font-size:11px;color:#96A3B0;text-align:center;">Historia · Grundskola · Håkan Hildingsson · Vt 2026</p>' +
+      '</td></tr>' +
+    '</table>' +
+    '</td></tr></table>' +
+  '</body></html>';
+}
+
+// ── Navigering ───────────────────────────────────────────────
+function visa(vy, btn) {
+  document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('view-' + vy).classList.add('active');
+  btn.classList.add('active');
+}
+
+function visaScenario(i, btn) {
+  document.querySelectorAll('.scenario-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var s = scenarier[i];
+  var html = buildHtmlEmail(s.namn, s.betyg, s.kommentar);
+  var frame = document.getElementById('emailFrame');
+  frame.srcdoc = html;
+}
+
+// Ladda första scenariot
+visaScenario(0, document.querySelector('.scenario-btn'));
+</script>
+</body>
+</html>
