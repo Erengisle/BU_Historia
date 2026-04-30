@@ -2,9 +2,106 @@
 // Omprov Historia – Slutversion
 // ========================
 
-const SHEET_NAME = 'Omprov Historia';
+const SHEET_NAME    = 'Omprov Historia';
+const RESULTAT_SHEET = 'Resultat';
 const TEACHER_EMAIL = 'hakan.hildingsson@edu.huddinge.se';
-const CALENDAR_ID = 'primary';
+const CALENDAR_ID   = 'primary';
+
+// Uppdatera till den deployade webb-appens URL efter publicering
+const OMPROV_URL = 'https://script.google.com/macros/s/ERSÄTT_MED_RÄTT_URL/exec';
+
+const UPPGIFTER = [
+  'Första världskriget',
+  'Mellankrigstiden',
+  'Andra världskriget',
+  'Europa efter världskrigen',
+  'Sverige efter världskrigen',
+  'Världen efter världskrigen',
+];
+
+// ---------- MENY & SIDOPANEL ----------
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Historia')
+    .addItem('Öppna betygspanel', 'openSidebar')
+    .addSeparator()
+    .addItem('Skapa QR-kod (omprov)', 'skapaQRkod')
+    .addToUi();
+}
+
+function openSidebar() {
+  var html = HtmlService.createHtmlOutputFromFile('sidebar')
+    .setTitle('Betygspanel');
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+// ---------- BACKEND: HÄMTA ELEVDATA ----------
+// Returnerar { elever: [...], uppgifter: [...] } eller { fel: "..." }
+function hamtaElevdata() {
+  try {
+    var ss    = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(RESULTAT_SHEET);
+
+    if (!sheet) {
+      sheet = ss.insertSheet(RESULTAT_SHEET);
+      var headers = ['Namn'];
+      UPPGIFTER.forEach(function(u) {
+        headers.push(u + ' – Betyg');
+        headers.push(u + ' – Kommentar');
+      });
+      headers.push('Intern kommentar');
+      sheet.appendRow(headers);
+      sheet.setFrozenRows(1);
+    }
+
+    var data   = sheet.getDataRange().getValues();
+    var elever = [];
+
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      if (!row[0]) continue;
+
+      var betyg      = [];
+      var kommentar  = [];
+      for (var j = 0; j < UPPGIFTER.length; j++) {
+        betyg.push(row[1 + j * 2] || '–');
+        kommentar.push(row[2 + j * 2] || '');
+      }
+
+      elever.push({
+        radIndex:       i,          // 0-baserat radindex i data-arrayen
+        namn:           row[0],
+        betyg:          betyg,
+        kommentar:      kommentar,
+        internKommentar: row[1 + UPPGIFTER.length * 2] || '',
+      });
+    }
+
+    return { elever: elever, uppgifter: UPPGIFTER };
+
+  } catch (err) {
+    return { fel: err.message };
+  }
+}
+
+// ---------- BACKEND: SPARA ALLA ELEVER ----------
+// Tar emot state.elever från sidopanelen och skriver tillbaka till Sheetet
+function sparaAllaElever(elever) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(RESULTAT_SHEET);
+  if (!sheet) throw new Error('Sheet saknas: ' + RESULTAT_SHEET);
+
+  elever.forEach(function(elev) {
+    var rowNum  = elev.radIndex + 1;   // getRange är 1-baserat
+    var rowData = [elev.namn];
+    for (var j = 0; j < UPPGIFTER.length; j++) {
+      rowData.push(elev.betyg[j]      || '–');
+      rowData.push(elev.kommentar[j]  || '');
+    }
+    rowData.push(elev.internKommentar || '');
+    sheet.getRange(rowNum, 1, 1, rowData.length).setValues([rowData]);
+  });
+}
 
 // ---------- VISA FORMULÄR ----------
 function doGet() {
