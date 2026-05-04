@@ -124,6 +124,7 @@
 <nav>
   <h1>BU Historia — Förhandsgranskning</h1>
   <button class="tab active" onclick="visa('email', this)">📧 Resultatmejl</button>
+  <button class="tab" onclick="visa('resultatsida', this)">🌐 Resultatsida</button>
   <button class="tab" onclick="visa('form', this)">📋 Omprovformulär</button>
   <button class="tab" onclick="visa('sidebar', this)">🗂 Betygspanel</button>
 </nav>
@@ -160,6 +161,42 @@
     </div>
     <div class="email-frame-wrap">
       <iframe id="emailFrame"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RESULTATSIDA ═══ -->
+<div class="view" id="view-resultatsida">
+  <div class="email-wrap">
+    <div class="scenario-list">
+      <h2>Testscenarier</h2>
+      <button class="scenario-btn active" onclick="visaResultatSida(0, this)">
+        Klarar kursen
+        <small>4/6 godkända</small>
+      </button>
+      <button class="scenario-btn" onclick="visaResultatSida(1, this)">
+        Nästan — 3/6
+        <small>Varning nivå 1</small>
+      </button>
+      <button class="scenario-btn" onclick="visaResultatSida(2, this)">
+        Tre underkända
+        <small>Varning nivå 2</small>
+      </button>
+      <button class="scenario-btn" onclick="visaResultatSida(3, this)">
+        Fyra underkända
+        <small>Varning nivå 3 (kritisk)</small>
+      </button>
+      <button class="scenario-btn" onclick="visaResultatSida(4, this)">
+        Alla A
+        <small>Toppresultat</small>
+      </button>
+      <button class="scenario-btn" onclick="visaResultatSida(5, this)">
+        Ingen resultat
+        <small>Inga prov gjorda</small>
+      </button>
+    </div>
+    <div class="email-frame-wrap">
+      <iframe id="resultFrame" style="width:100%;height:calc(100vh - 120px);border:none;display:block;background:#F0EDE6;"></iframe>
     </div>
   </div>
 </div>
@@ -249,23 +286,63 @@ var scenarier = [
 ];
 
 // ── buildHtmlEmail (portad från buildHtmlEmail.gs) ─────────
-function gradeColor(g) {
-  if (g === 'A') return { bg: '#E8F5EE', color: '#1A7A4A' };
-  if (g === 'C') return { bg: '#EBF0FA', color: '#2355A0' };
-  if (g === 'E') return { bg: '#FDF0E8', color: '#C05A20' };
-  return { bg: '#F0EDE6', color: '#96A3B0' };
-}
+// gradeColor definieras nu ovan via gradeColor_
 
 function gradeBadge(g, size) {
   size = size || 36;
-  var c = gradeColor(g);
+  var c = gradeColor_(g);
   return '<span style="display:inline-flex;align-items:center;justify-content:center;' +
     'width:' + size + 'px;height:' + size + 'px;border-radius:6px;' +
     'background:' + c.bg + ';font-family:Georgia,serif;font-size:' + Math.round(size * 0.54) + 'px;' +
     'font-weight:700;color:' + c.color + ';line-height:1;">' + g + '</span>';
 }
 
-function buildHtmlEmail(studentName, results, comments) {
+function gradeColor_(g) {
+  if (g === 'A') return { bg: '#E8F5EE', color: '#1A7A4A' };
+  if (g === 'C') return { bg: '#EBF0FA', color: '#2355A0' };
+  if (g === 'E') return { bg: '#FDF0E8', color: '#C05A20' };
+  return           { bg: '#F0EDE6', color: '#96A3B0' };
+}
+function gradeColor(g) { return gradeColor_(g); }
+
+function buildResultatSida(studentName, results, comments) {
+  var count   = results.filter(function(r) { return ['E','C','A'].indexOf(r) !== -1; }).length;
+  var tcBg    = count >= 4 ? '#E8F5EE' : (count === 3 ? '#FDF8D0' : '#FDEAEA');
+  var tcColor = count >= 4 ? '#1A7A4A' : (count === 3 ? '#A07800' : '#B52020');
+  var tcLabel = count >= 4 ? 'Du klarar kursen' : (count === 3 ? 'Nästan — ett prov kvar' : 'Fler godkända behövs');
+
+  var provRader = '';
+  results.forEach(function(grade, i) {
+    var provNamn = UPPGIFTER[i] || ('Prov ' + (i + 1));
+    var comment  = (comments && comments[i]) ? comments[i] : '';
+    var gc = gradeColor_(grade);
+    provRader +=
+      '<div class="prov-rad">' +
+        '<span class="badge" style="background:' + gc.bg + ';color:' + gc.color + ';">' + grade + '</span>' +
+        '<div class="prov-text">' +
+          '<div class="prov-namn">' + provNamn + '</div>' +
+          (comment ? '<div class="prov-kommentar">' + comment + '</div>' : '') +
+        '</div>' +
+      '</div>';
+  });
+
+  return '<!DOCTYPE html><html lang="sv"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Dina resultat – Historia</title>' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">' +
+    '<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Space Grotesk",Helvetica Neue,Arial,sans-serif;background:#F0EDE6;color:#0F1B2D;min-height:100vh;-webkit-font-smoothing:antialiased}.header{background:#0F1B2D;padding:28px 20px 22px}.header-eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#556070;margin-bottom:6px}.header-name{font-family:"Spectral",Georgia,serif;font-size:26px;font-weight:600;color:#F7F4EE;line-height:1.2}.header-sub{margin-top:6px;font-size:13px;color:#556070}.content{padding:16px 14px 48px;max-width:600px;margin:0 auto}.trafikljus{background:' + tcBg + ';border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px}.trafikljus-siffra{font-family:"Spectral",Georgia,serif;font-size:34px;font-weight:600;color:' + tcColor + ';line-height:1}.trafikljus-label{font-size:13px;font-weight:600;color:' + tcColor + '}.kort{background:#fff;border:1px solid #DDD8D0;border-radius:12px;overflow:hidden;margin-bottom:14px}.prov-rad{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #DDD8D0}.prov-rad:last-child{border-bottom:none}.badge{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:7px;font-family:"Spectral",Georgia,serif;font-size:20px;font-weight:600;flex-shrink:0}.prov-text{padding-top:2px}.prov-namn{font-size:14px;font-weight:600;color:#0F1B2D}.prov-kommentar{margin-top:4px;font-size:12px;color:#556070;line-height:1.55}.info-kort{background:#fff;border:1px solid #DDD8D0;border-radius:12px;padding:14px 16px;margin-bottom:14px}.info-text{font-family:"Spectral",Georgia,serif;font-style:italic;font-size:13px;color:#556070;line-height:1.75}.cta-knapp{display:block;width:100%;padding:15px;background:#0F1B2D;color:#F7F4EE;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;text-align:center;margin-bottom:14px}.footer{font-size:11px;color:#96A3B0;text-align:center;padding-top:4px}</style>' +
+    '</head><body>' +
+    '<div class="header"><div class="header-eyebrow">Historia · Grundskola · Vt 2026</div><div class="header-name">' + studentName + '</div><div class="header-sub">Dina resultat och kommentarer</div></div>' +
+    '<div class="content">' +
+    '<div class="trafikljus"><div class="trafikljus-siffra">' + count + '/6</div><div class="trafikljus-label">' + tcLabel + '</div></div>' +
+    '<div class="kort">' + provRader + '</div>' +
+    '<a class="cta-knapp" href="' + OMPROV_URL + '">Anmäl dig till omprov →</a>' +
+    '<div class="info-kort"><p class="info-text">För godkänt på kursen krävs 4 av 6 godkända prov. Omprov planeras vid behov — alltid onsdagar kl. 14:45–16:15.</p></div>' +
+    '<p class="footer">Historia · Grundskola · Håkan Hildingsson · Vt 2026</p>' +
+    '</div></body></html>';
+}
+
+function buildHtmlEmail(studentName, results, comments, resultUrl) {
   var count = results.filter(function(r) { return ['E','C','A'].indexOf(r) !== -1; }).length;
 
   var tcBg    = count >= 4 ? '#E8F5EE' : (count === 3 ? '#FDF8D0' : '#FDEAEA');
@@ -368,6 +445,7 @@ function buildHtmlEmail(studentName, results, comments) {
         '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;overflow:hidden;margin-bottom:16px;">' +
           provRows +
         '</table>' +
+        (resultUrl ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td><a href="' + resultUrl + '" style="display:block;padding:13px 16px;background:#0F1B2D;color:#F7F4EE;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;text-align:center;">Se din resultatsida →</a></td></tr></table>' : '') +
         '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;margin-bottom:8px;">' +
         '<tr><td style="padding:14px 16px;">' +
           '<p style="margin:0;font-family:Georgia,serif;font-style:italic;font-size:13px;color:#556070;line-height:1.75;">' +
@@ -390,16 +468,25 @@ function visa(vy, btn) {
 }
 
 function visaScenario(i, btn) {
-  document.querySelectorAll('.scenario-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#view-email .scenario-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   var s = scenarier[i];
-  var html = buildHtmlEmail(s.namn, s.betyg, s.kommentar);
+  var html = buildHtmlEmail(s.namn, s.betyg, s.kommentar, '#resultatsida-preview');
   var frame = document.getElementById('emailFrame');
   frame.srcdoc = html;
 }
 
+function visaResultatSida(i, btn) {
+  document.querySelectorAll('#view-resultatsida .scenario-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var s = scenarier[i];
+  var html = buildResultatSida(s.namn, s.betyg, s.kommentar);
+  document.getElementById('resultFrame').srcdoc = html;
+}
+
 // Ladda första scenariot
-visaScenario(0, document.querySelector('.scenario-btn'));
+visaScenario(0, document.querySelector('#view-email .scenario-btn'));
+visaResultatSida(0, document.querySelector('#view-resultatsida .scenario-btn'));
 </script>
 </body>
 </html>
