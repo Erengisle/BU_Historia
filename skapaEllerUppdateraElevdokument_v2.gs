@@ -17,8 +17,7 @@ const OMRADEN = [
   'Världen efter världskrigen',
 ];
 
-// ── URL till omprovs-formuläret (fyll i din Apps Script-URL) ─
-const OMPROV_URL = 'KLISTRA_IN_DIN_APPS_SCRIPT_URL_HÄR';
+// OMPROV_URL definieras i Code.gs (hämtas automatiskt från ScriptApp)
 
 // ── Färger ──────────────────────────────────────────────────
 const COLOR_RED    = '#B52020';

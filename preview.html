@@ -73,9 +73,10 @@
       overflow: hidden;
       border: 1px solid #333;
     }
-    #emailFrame {
+    #emailFrame, #resultFrame {
       width: 100%;
       height: calc(100vh - 120px);
+      min-height: 480px;
       border: none;
       display: block;
       background: #F0EDE6;
@@ -85,6 +86,7 @@
     #formFrame {
       width: 100%;
       height: calc(100vh - 57px);
+      min-height: 500px;
       border: none;
       display: block;
     }
@@ -113,10 +115,25 @@
     #sidebarFrame {
       width: 300px;
       height: calc(100vh - 97px);
+      min-height: 480px;
       border: 1px solid #444;
       border-radius: 8px;
       background: #F7F4EE;
     }
+
+    /* "Inte tillgängligt i modal"-ruta */
+    .ej-tillganglig {
+      margin: 24px 20px;
+      padding: 20px 24px;
+      background: #0f0f1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.7;
+    }
+    .ej-tillganglig strong { color: #eee; }
+    .ej-tillganglig a { color: #D4880A; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -125,8 +142,8 @@
   <h1>BU Historia — Förhandsgranskning</h1>
   <button class="tab active" onclick="visa('email', this)">📧 Resultatmejl</button>
   <button class="tab" onclick="visa('resultatsida', this)">🌐 Resultatsida</button>
-  <button class="tab" onclick="visa('form', this)">📋 Omprovformulär</button>
-  <button class="tab" onclick="visa('sidebar', this)">🗂 Betygspanel</button>
+  <button class="tab" id="tab-form" onclick="visa('form', this)">📋 Omprovformulär</button>
+  <button class="tab" id="tab-sidebar" onclick="visa('sidebar', this)">🗂 Betygspanel</button>
 </nav>
 
 <!-- ═══ E-POST ═══ -->
@@ -203,12 +220,23 @@
 
 <!-- ═══ FORMULÄR ═══ -->
 <div class="view" id="view-form">
-  <iframe id="formFrame" src="form.html"></iframe>
+  <!-- src sätts av JavaScript beroende på kontext -->
+  <iframe id="formFrame"></iframe>
+  <div id="form-ej-tillganglig" class="ej-tillganglig" style="display:none;">
+    <strong>Omprovformulär</strong><br>
+    Formuläret öppnas via den driftsatta webbappen. Länk:<br>
+    <a id="form-url-link" href="#" target="_blank" style="word-break:break-all;">hämtar URL…</a>
+  </div>
 </div>
 
 <!-- ═══ SIDEBAR ═══ -->
 <div class="view" id="view-sidebar">
-  <div class="sidebar-wrap">
+  <div id="sidebar-modal-note" class="ej-tillganglig" style="display:none;">
+    <strong>Betygspanelen</strong><br>
+    Sidopanelen körs direkt i Google Sheets och kommunicerar med Apps Script — den kan inte visas här.<br><br>
+    Stäng denna dialog och välj <strong>Historia → Öppna betygspanel</strong> i menyraden.
+  </div>
+  <div class="sidebar-wrap" id="sidebar-local-wrap">
     <div class="sidebar-note">
       <h2>Betygspanelen (sidebar.html)</h2>
       <p>Sidopanelen körs inuti Google Sheets och kommunicerar med Apps Script via <code>google.script.run</code>. Den kan inte renderas fristående utan Sheets-miljön.</p>
@@ -235,7 +263,10 @@ var UPPGIFTER = [
   'Världen efter världskrigen',
 ];
 var TEACHER_EMAIL = 'hakan.hildingsson@edu.huddinge.se';
-var OMPROV_URL = '#anmalan';
+var OMPROV_URL    = '#anmalan'; // ersätts om Apps Script-URL är tillgänglig
+
+// Detekterar om sidan körs inuti Google Sheets (modal/sidebar)
+var IS_APPS_SCRIPT = typeof google !== 'undefined' && typeof google.script !== 'undefined';
 
 // ── Testdata ─────────────────────────────────────────────────
 var scenarier = [
@@ -484,9 +515,47 @@ function visaResultatSida(i, btn) {
   document.getElementById('resultFrame').srcdoc = html;
 }
 
-// Ladda första scenariot
-visaScenario(0, document.querySelector('#view-email .scenario-btn'));
-visaResultatSida(0, document.querySelector('#view-resultatsida .scenario-btn'));
+// ── Init: anpassa beroende på kontext ────────────────────────
+function init() {
+  if (IS_APPS_SCRIPT) {
+    // Hämta webb-URL från Apps Script och konfigurera vyer
+    google.script.run
+      .withSuccessHandler(function(url) {
+        if (url) {
+          OMPROV_URL = url;
+          // Formulär-fliken: ladda formuläret direkt i iframe
+          document.getElementById('formFrame').src = url;
+        } else {
+          // Ingen URL ännu — visa länk-ruta istället för iframe
+          document.getElementById('formFrame').style.display = 'none';
+          var ej = document.getElementById('form-ej-tillganglig');
+          ej.style.display = 'block';
+          ej.querySelector('#form-url-link').textContent = 'Scriptet är inte driftsatt som webbapp ännu.';
+        }
+        // Uppdatera link-rutor
+        var lnk = document.getElementById('form-url-link');
+        if (lnk && url) { lnk.href = url; lnk.textContent = url; }
+      })
+      .withFailureHandler(function() {
+        document.getElementById('formFrame').style.display = 'none';
+        document.getElementById('form-ej-tillganglig').style.display = 'block';
+      })
+      .getWebAppUrl();
+
+    // Sidebar-fliken: visa instruktion istället för iframe
+    document.getElementById('sidebar-modal-note').style.display = 'block';
+    document.getElementById('sidebar-local-wrap').style.display = 'none';
+  } else {
+    // Lokalt filläge: formulär och sidebar via relativa sökvägar
+    document.getElementById('formFrame').src = 'form.html';
+  }
+
+  // Ladda första scenariot i email- och resultatsida-flikarna
+  visaScenario(0, document.querySelector('#view-email .scenario-btn'));
+  visaResultatSida(0, document.querySelector('#view-resultatsida .scenario-btn'));
+}
+
+init();
 </script>
 </body>
 </html>

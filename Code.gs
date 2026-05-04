@@ -14,6 +14,12 @@ const EXTERN_SHEET_NAMN = 'SPRINT-Hi: Namn och e-postadresser';
 // Token-kolumn = P (kolumn 16, 1-baserat)
 const TOKEN_KOL = 16;
 
+// URL till detta Apps Script-projekt (omprovformulär + resultatsidor).
+// Sätts automatiskt när scriptet är driftsatt som webbapp; tom sträng annars.
+const OMPROV_URL = (function() {
+  try { return ScriptApp.getService().getUrl() || ''; } catch(e) { return ''; }
+})();
+
 const UPPGIFTER = [
   'Första världskriget',
   'Mellankrigstiden',
@@ -28,6 +34,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Historia')
     .addItem('Öppna betygspanel', 'openSidebar')
+    .addItem('Förhandsgranska mejl & resultatsida', 'oppnaForhandsgranskning')
     .addSeparator()
     .addItem('Importera elever från klasslista', 'importeraElever')
     .addSeparator()
@@ -35,6 +42,18 @@ function onOpen() {
     .addSeparator()
     .addItem('Skapa QR-kod (omprov)', 'skapaQRkod')
     .addToUi();
+}
+
+function oppnaForhandsgranskning() {
+  var html = HtmlService.createHtmlOutputFromFile('preview')
+    .setWidth(980)
+    .setHeight(700);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Förhandsgranskning – Historia');
+}
+
+// Anropas från preview.html när det körs inuti Sheets
+function getWebAppUrl() {
+  try { return ScriptApp.getService().getUrl() || ''; } catch(e) { return ''; }
 }
 
 function openSidebar() {
@@ -233,6 +252,12 @@ function skickaMailTillElev(radIndex) {
 
   if (!epost) throw new Error('Eleven saknar e-postadress.');
 
+  // Auto-generera token om eleven saknar en
+  if (!token) {
+    token = genereraToken();
+    sheet.getRange(radIndex + 2, TOKEN_KOL).setValue(token);
+  }
+
   var betyg     = [];
   var kommentar = [];
   for (var j = 0; j < UPPGIFTER.length; j++) {
@@ -240,7 +265,8 @@ function skickaMailTillElev(radIndex) {
     kommentar.push(row[3 + j * 2] || '');
   }
 
-  var resultUrl = token ? ScriptApp.getService().getUrl() + '?t=' + token : null;
+  var baseUrl   = OMPROV_URL;
+  var resultUrl = (baseUrl && token) ? baseUrl + '?t=' + token : null;
   var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl);
   MailApp.sendEmail({
     to:       epost,
@@ -273,6 +299,12 @@ function skickaResultatmail() {
     if (!namn) continue;
     if (!epost) { hoppade++; continue; }
 
+    // Auto-generera token om eleven saknar en
+    if (!token) {
+      token = genereraToken();
+      sheet.getRange(i + 1, TOKEN_KOL).setValue(token);
+    }
+
     var betyg     = [];
     var kommentar = [];
     for (var j = 0; j < UPPGIFTER.length; j++) {
@@ -281,7 +313,7 @@ function skickaResultatmail() {
     }
 
     try {
-      var resultUrl = token ? ScriptApp.getService().getUrl() + '?t=' + token : null;
+      var resultUrl = (OMPROV_URL && token) ? OMPROV_URL + '?t=' + token : null;
       var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl);
       MailApp.sendEmail({
         to:       epost,
