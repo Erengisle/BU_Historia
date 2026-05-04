@@ -296,8 +296,9 @@
     }
     .oversikt-tabell th.namn-kol {
       text-align: left;
-      min-width: 90px;
-      padding-right: 6px;
+      width: 1px;
+      white-space: nowrap;
+      padding-right: 8px;
     }
     .oversikt-tabell td {
       padding: 2px 1px;
@@ -309,15 +310,47 @@
       font-size: 11px;
       font-weight: 500;
       white-space: nowrap;
-      padding-right: 6px;
+      width: 1px;
+      padding-right: 8px;
       color: var(--ink);
+      cursor: pointer;
     }
+    .oversikt-tabell td.namn-cell:hover { color: var(--amber); }
     .oversikt-tabell .betyg-select {
       width: 32px;
       height: 22px;
       font-size: 11px;
     }
     .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
+    .oversikt-kom-rad td {
+      background: #FFFBF0;
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--fog);
+    }
+    .oversikt-kom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .oversikt-kom-block { display: flex; flex-direction: column; gap: 3px; }
+    .oversikt-kom-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--mist);
+    }
+    .oversikt-kom-rad textarea {
+      font-size: 11px;
+      padding: 4px 6px;
+      border: 1px solid var(--fog);
+      border-radius: 4px;
+      background: var(--white);
+      resize: vertical;
+      font-family: inherit;
+      color: var(--ink);
+      line-height: 1.4;
+    }
     .oversikt-legend {
       margin-top: 8px;
       font-size: 10px;
@@ -547,15 +580,57 @@ function renderVyOversikt(app) {
 
   // Elevrader
   var tbody = el('tbody');
+  var kolAntal = state.uppgifter.length + 1;
+
   state.elever.forEach(function(elev, idx) {
+    var expanderad = state.expanderadElev === idx;
+
     var tr  = el('tr');
-    var td0 = el('td', { className: 'namn-cell' }); td0.textContent = elev.namn; tr.appendChild(td0);
+    var td0 = el('td', { className: 'namn-cell' });
+    td0.textContent = (expanderad ? '▾ ' : '▸ ') + elev.namn;
+    td0.addEventListener('click', function() {
+      state.expanderadElev = expanderad ? null : idx;
+      render();
+    });
+    tr.appendChild(td0);
+
     elev.betyg.forEach(function(b, i) {
       var td = el('td');
       td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; }));
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
+
+    // Kommentarsrad (expanderad)
+    if (expanderad) {
+      var komTr = el('tr', { className: 'oversikt-kom-rad' });
+      var komTd = el('td'); komTd.colSpan = kolAntal;
+      var grid  = el('div', { className: 'oversikt-kom-grid' });
+
+      state.uppgifter.forEach(function(u, i) {
+        var block = el('div', { className: 'oversikt-kom-block' });
+        var lbl   = el('div', { className: 'oversikt-kom-label' }); lbl.textContent = KORT_NAMN[i] + ' – ' + u; block.appendChild(lbl);
+        var ta    = el('textarea'); ta.rows = 2; ta.placeholder = 'Kommentar…';
+        ta.value  = elev.kommentar[i] || '';
+        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; });
+        block.appendChild(ta);
+        grid.appendChild(block);
+      });
+
+      // Intern anteckning
+      var internBlock = el('div', { className: 'oversikt-kom-block' });
+      internBlock.style.gridColumn = '1 / -1';
+      var internLbl = el('div', { className: 'oversikt-kom-label' }); internLbl.textContent = '🔒 Intern anteckning'; internBlock.appendChild(internLbl);
+      var internTa  = el('textarea'); internTa.rows = 2; internTa.placeholder = 'Bara för dig…';
+      internTa.value = elev.internKommentar || '';
+      internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
+      internBlock.appendChild(internTa);
+      grid.appendChild(internBlock);
+
+      komTd.appendChild(grid);
+      komTr.appendChild(komTd);
+      tbody.appendChild(komTr);
+    }
   });
   tbl.appendChild(tbody);
   wrap.appendChild(tbl);
