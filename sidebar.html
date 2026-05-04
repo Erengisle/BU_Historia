@@ -272,6 +272,55 @@
     .mail-knapp.skickat { background: var(--emerald); color: #fff; border-color: var(--emerald); }
     .mail-knapp.fel { background: #FDEAEA; color: var(--crimson); border-color: #E8AAAA; }
 
+    /* Översiktsvy */
+    .oversikt-wrap {
+      flex: 1;
+      overflow: auto;
+      padding: 8px 10px;
+    }
+    .oversikt-tabell {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 380px;
+    }
+    .oversikt-tabell th {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--mist);
+      padding: 4px 3px 6px;
+      text-align: center;
+      border-bottom: 2px solid var(--fog);
+      white-space: nowrap;
+    }
+    .oversikt-tabell th.namn-kol {
+      text-align: left;
+      min-width: 110px;
+      padding-right: 8px;
+    }
+    .oversikt-tabell td {
+      padding: 3px;
+      border-bottom: 1px solid var(--fog);
+      text-align: center;
+    }
+    .oversikt-tabell td.namn-cell {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      padding-right: 8px;
+      color: var(--ink);
+    }
+    .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
+    .oversikt-legend {
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--mist);
+      line-height: 1.7;
+    }
+    .oversikt-legend span { display: inline-block; margin-right: 10px; }
+
     /* Laddare */
     .laddar {
       text-align: center;
@@ -328,11 +377,13 @@ function render() {
   // Vy-knappar
   var vyBar = el('div', { className: 'vy-knappar' });
   vyBar.appendChild(knapp('Per uppgift', state.vy === 'uppgift', function() { state.vy = 'uppgift'; state.expanderadElev = null; render(); }));
-  vyBar.appendChild(knapp('Per elev', state.vy === 'elev', function() { state.vy = 'elev'; state.expanderadElev = null; render(); }));
+  vyBar.appendChild(knapp('Per elev',    state.vy === 'elev',    function() { state.vy = 'elev';    state.expanderadElev = null; render(); }));
+  vyBar.appendChild(knapp('Översikt',    state.vy === 'oversikt',function() { state.vy = 'oversikt';state.expanderadElev = null; render(); }));
   app.appendChild(vyBar);
 
-  if (state.vy === 'uppgift') renderVyUppgift(app);
-  else renderVyElev(app);
+  if (state.vy === 'uppgift')   renderVyUppgift(app);
+  else if (state.vy === 'elev') renderVyElev(app);
+  else                          renderVyOversikt(app);
 
   // Spara-rad
   renderSparaRad(app);
@@ -467,6 +518,50 @@ function renderVyElev(app) {
   });
 
   app.appendChild(lista);
+}
+
+// ── Vy: översikt (alla elever × alla prov) ─────────────────
+var KORT_NAMN = ['FVK','MKT','AVK','EUR','SVE','VRL'];
+
+function renderVyOversikt(app) {
+  var wrap = el('div', { className: 'oversikt-wrap' });
+  var tbl  = el('table', { className: 'oversikt-tabell' });
+
+  // Rubrikrad
+  var thead = el('thead');
+  var hr    = el('tr');
+  var th0   = el('th', { className: 'namn-kol' }); th0.textContent = 'Elev'; hr.appendChild(th0);
+  state.uppgifter.forEach(function(u, i) {
+    var th = el('th');
+    th.textContent = KORT_NAMN[i] || (i + 1);
+    th.title = u;
+    hr.appendChild(th);
+  });
+  thead.appendChild(hr);
+  tbl.appendChild(thead);
+
+  // Elevrader
+  var tbody = el('tbody');
+  state.elever.forEach(function(elev, idx) {
+    var tr  = el('tr');
+    var td0 = el('td', { className: 'namn-cell' }); td0.textContent = elev.namn; tr.appendChild(td0);
+    elev.betyg.forEach(function(b, i) {
+      var td = el('td');
+      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; }));
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  wrap.appendChild(tbl);
+
+  // Förklaring
+  var legend = el('div', { className: 'oversikt-legend' });
+  state.uppgifter.forEach(function(u, i) {
+    var s = el('span'); s.textContent = (KORT_NAMN[i] || (i+1)) + ' = ' + u; legend.appendChild(s);
+  });
+  wrap.appendChild(legend);
+  app.appendChild(wrap);
 }
 
 // ── Spara-rad ──────────────────────────────────────────────
