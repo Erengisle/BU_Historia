@@ -103,6 +103,37 @@ function sparaAllaElever(elever) {
   });
 }
 
+// ---------- SKICKA MEJL TILL EN ELEV ----------
+// Anropas från sidopanelen med elevens radIndex (0-baserat, exkl. rubrikrad)
+function skickaMailTillElev(radIndex) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(RESULTAT_SHEET);
+  if (!sheet) throw new Error('Sheet saknas: ' + RESULTAT_SHEET);
+
+  var data = sheet.getDataRange().getValues();
+  var row  = data[radIndex + 1];  // +1 för rubrikraden
+  var namn  = row[0];
+  var epost = row[1];
+
+  if (!epost) throw new Error('Eleven saknar e-postadress.');
+
+  var betyg     = [];
+  var kommentar = [];
+  for (var j = 0; j < UPPGIFTER.length; j++) {
+    betyg.push(row[2 + j * 2] || '–');
+    kommentar.push(row[3 + j * 2] || '');
+  }
+
+  var html = buildHtmlEmail(namn, betyg, kommentar);
+  MailApp.sendEmail({
+    to:       epost,
+    subject:  'Dina resultat i Historia',
+    htmlBody: html,
+  });
+
+  return namn;
+}
+
 // ---------- SKICKA RESULTATMEJL ----------
 // Skickar HTML-mejl till alla elever i Resultat-sheetet som har en e-postadress
 function skickaResultatmail() {

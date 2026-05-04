@@ -253,6 +253,25 @@
     }
     .status-text.fel { color: var(--crimson); }
 
+    /* Skicka mejl-knapp (per elev) */
+    .mail-knapp {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--fog);
+      border-radius: 6px;
+      background: var(--parchment);
+      color: var(--slate);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .mail-knapp:hover:not(:disabled) { background: var(--ink); color: var(--parchment); border-color: var(--ink); }
+    .mail-knapp:disabled { opacity: 0.6; cursor: default; }
+    .mail-knapp.skickat { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+    .mail-knapp.fel { background: #FDEAEA; color: var(--crimson); border-color: #E8AAAA; }
+
     /* Laddare */
     .laddar {
       text-align: center;
@@ -413,6 +432,35 @@ function renderVyElev(app) {
       internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
       internBox.appendChild(internTa);
       detalj.appendChild(internBox);
+
+      // Skicka mejl-knapp
+      var mailBtn = el('button', { className: 'mail-knapp' });
+      mailBtn.textContent = '📧 Skicka resultatmejl';
+      (function(e, btn) {
+        btn.addEventListener('click', function(ev) {
+          ev.stopPropagation();
+          btn.disabled = true;
+          btn.textContent = 'Skickar…';
+          btn.className = 'mail-knapp';
+          google.script.run
+            .withSuccessHandler(function(namn) {
+              btn.textContent = '✓ Skickat till ' + namn;
+              btn.className = 'mail-knapp skickat';
+              setTimeout(function() {
+                btn.textContent = '📧 Skicka resultatmejl';
+                btn.className = 'mail-knapp';
+                btn.disabled = false;
+              }, 3000);
+            })
+            .withFailureHandler(function(err) {
+              btn.textContent = '⚠ ' + err.message;
+              btn.className = 'mail-knapp fel';
+              btn.disabled = false;
+            })
+            .skickaMailTillElev(e.radIndex);
+        });
+      })(elev, mailBtn);
+      detalj.appendChild(mailBtn);
 
       lista.appendChild(detalj);
     }
