@@ -452,44 +452,48 @@ function serveLararsida() {
 }
 
 // ---------- TA EMOT OMPROVS-ANMÄLAN ----------
+
+// Anropas via google.script.run från formuläret (undviker CORS-problem med fetch/POST)
+function registreraOmprov(email, exam, date) {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) throw new Error('Sheet saknas: ' + SHEET_NAME);
+
+  const [y, m, d] = date.split('-').map(Number);
+  const dateObj   = new Date(y, m - 1, d);
+  if (isNaN(dateObj.getTime())) throw new Error('Ogiltigt datum: ' + date);
+
+  const week = getISOWeekNumber(dateObj);
+
+  sheet.appendRow([new Date(), email, date, exam, 'v' + week]);
+
+  const subject = 'Bekräftelse – Omprov i Historia';
+  const body    =
+    'Hej!\n\nDu är nu anmäld till omprov i Historia.\n\n' +
+    'Prov: '  + exam + '\n' +
+    'Datum: ' + date + '\n' +
+    'Vecka: v' + week + '\n' +
+    'Tid: 14:45–16:15\n\nVälkommen!\n/Håkan Hildingsson';
+
+  MailApp.sendEmail(email,        subject, body);
+  MailApp.sendEmail(TEACHER_EMAIL, subject, body);
+
+  const cal   = CalendarApp.getCalendarById(CALENDAR_ID);
+  const start = new Date(date + 'T14:45:00');
+  const end   = new Date(date + 'T16:15:00');
+  cal.createEvent('Omprov Historia – ' + exam, start, end,
+    { guests: email + ',' + TEACHER_EMAIL, sendInvites: true });
+}
+
+// doPost behålls som reserv (t.ex. direktanrop utanför webbläsaren)
 function doPost(e) {
   try {
     if (!e || !e.postData) throw new Error('Ingen postData mottagen');
     const data = JSON.parse(e.postData.contents);
-
-    const ss    = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) throw new Error('Sheet saknas: ' + SHEET_NAME);
-
-    const [y, m, d] = data.date.split('-').map(Number);
-    const dateObj   = new Date(y, m - 1, d);
-    if (isNaN(dateObj)) throw new Error('Ogiltigt datum: ' + data.date);
-
-    const week = getISOWeekNumber(dateObj);
-
-    sheet.appendRow([new Date(), data.email, data.date, data.exam, 'v' + week]);
-
-    const subject = 'Bekräftelse – Omprov i Historia';
-    const body    =
-      'Hej!\n\nDu är nu anmäld till omprov i Historia.\n\n' +
-      'Prov: '  + data.exam + '\n' +
-      'Datum: ' + data.date + '\n' +
-      'Vecka: v' + week + '\n' +
-      'Tid: 14:45–16:15\n\nVälkommen!\n/Håkan Hildingsson';
-
-    MailApp.sendEmail(data.email,   subject, body);
-    MailApp.sendEmail(TEACHER_EMAIL, subject, body);
-
-    const cal   = CalendarApp.getCalendarById(CALENDAR_ID);
-    const start = new Date(data.date + 'T14:45:00');
-    const end   = new Date(data.date + 'T16:15:00');
-    cal.createEvent('Omprov Historia – ' + data.exam, start, end,
-      { guests: data.email + ',' + TEACHER_EMAIL, sendInvites: true });
-
+    registreraOmprov(data.email, data.exam, data.date);
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-
   } catch (err) {
     Logger.log('FEL: ' + err.message);
     return ContentService

@@ -17,6 +17,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    .page-wrap {
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
     .header {
       background: #0F1B2D;
       padding: 28px 20px 22px;
@@ -167,6 +172,7 @@
   </style>
 </head>
 <body>
+<div class="page-wrap">
 
   <div class="header">
     <div class="header-eyebrow">Historia · Håkan Hildingsson</div>
@@ -177,7 +183,7 @@
   <div class="info-box">
     <div class="info-icon">📅</div>
     <div class="info-text">
-      <strong>Tänk på:</strong> Omprov bokas tidigast i februari.
+      <strong>Tänk på:</strong> Omprov bokas tidigast i februari.<br>
       Om du läser modersmål måste du vara ledig den berörda onsdagen.
     </div>
   </div>
@@ -225,6 +231,8 @@
   <div class="footer-note">
     Omprov genomförs onsdagar kl. 14:45–16:15
   </div>
+
+</div><!-- /.page-wrap -->
 
 <script>
   var dateInput   = document.getElementById('date');
@@ -280,27 +288,14 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Skickar…';
 
-    var payload = JSON.stringify({
-      email: emailInput.value,
-      exam:  examSelect.value,
-      date:  dateInput.value,
-    });
-
-    fetch(window.location.href, {
-      method: 'POST',
-      body: payload,
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (json.success) {
+    google.script.run
+      .withSuccessHandler(function() {
         showSuccess();
-      } else {
-        showError('Något gick fel: ' + (json.error || 'okänt fel'));
-      }
-    })
-    .catch(function() {
-      showError('Kunde inte nå servern. Försök igen eller kontakta läraren.');
-    });
+      })
+      .withFailureHandler(function(err) {
+        showError('Något gick fel: ' + (err.message || 'okänt fel'));
+      })
+      .registreraOmprov(emailInput.value, examSelect.value, dateInput.value);
   });
 
   function showSuccess() {
