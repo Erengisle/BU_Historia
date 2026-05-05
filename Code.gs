@@ -67,14 +67,14 @@ function visaLararUrl() {
   }
   var lararUrl = OMPROV_URL + '?view=larare';
   var html = HtmlService.createHtmlOutput(
-    '<div style="font-family:sans-serif;padding:24px;">' +
-    '<p style="font-size:13px;color:#556070;margin-bottom:12px;">Bokmärk den här länken för enkel åtkomst till betygspanelen:</p>' +
-    '<a href="' + lararUrl + '" target="_blank" ' +
-    'style="display:block;padding:12px 16px;background:#0F1B2D;color:#F7F4EE;' +
-    'text-decoration:none;border-radius:8px;font-size:13px;word-break:break-all;">' +
-    lararUrl + '</a>' +
-    '<p style="font-size:12px;color:#96A3B0;margin-top:12px;">Länken kräver att du är inloggad med ditt Google-konto.</p>' +
-    '</div>'
+    '<div style="font-family:sans-serif;padding:24px;">'
+    + '<p style="font-size:13px;color:#556070;margin-bottom:12px;">Bokmärk den här länken för enkel åtkomst till betygspanelen:</p>'
+    + '<a href="' + lararUrl + '" target="_blank" '
+    + 'style="display:block;padding:12px 16px;background:#0F1B2D;color:#F7F4EE;'
+    + 'text-decoration:none;border-radius:8px;font-size:13px;word-break:break-all;">'
+    + lararUrl + '</a>'
+    + '<p style="font-size:12px;color:#96A3B0;margin-top:12px;">Länken kräver att du är inloggad med ditt Google-konto.</p>'
+    + '</div>'
   ).setWidth(540).setHeight(180);
   SpreadsheetApp.getUi().showModalDialog(html, 'Betygspanel – lärarvy');
 }
@@ -492,8 +492,8 @@ function serveResultatSida(token) {
     }
   }
   return HtmlService.createHtmlOutput(
-    '<body style="margin:0;font-family:sans-serif;padding:48px 24px;color:#556070;">' +
-    '<p style="font-size:15px;">Länken är ogiltig eller har gått ut.<br>Kontakta din lärare.</p></body>'
+    '<body style="margin:0;font-family:sans-serif;padding:48px 24px;color:#556070;">'
+    + '<p style="font-size:15px;">Länken är ogiltig eller har gått ut.<br>Kontakta din lärare.</p></body>'
   ).setTitle('Ogiltig länk');
 }
 
