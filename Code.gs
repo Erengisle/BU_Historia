@@ -42,6 +42,7 @@ function onOpen() {
     .addSeparator()
     .addItem('Importera elever från klasslista',    'importeraElever')
     .addItem('Uppdatera e-postadresser',            'uppdateraEpostadresser')
+    .addItem('Kopiera betyg från Samlade resultat', 'kopieraFranSamladeResultat')
     .addSeparator()
     .addItem('Skicka resultatmejl till alla',       'skickaResultatmail')
     .addSeparator()
@@ -242,6 +243,58 @@ function uppdateraEpostadresser() {
 
 function genereraToken() {
   return Utilities.getUuid();
+}
+
+// ---------- KOPIERA BETYG FRÅN "Samlade resultat" ----------
+// "Samlade resultat": A=namn, B–G=betyg×6, I–N=kommentarer×6
+// "Resultat":         A=namn, C=betyg1, D=kommentar1, E=betyg2, … (varvat)
+function kopieraFranSamladeResultat() {
+  var ss     = SpreadsheetApp.getActiveSpreadsheet();
+  var källa  = ss.getSheetByName('Samlade resultat');
+  var mål    = ss.getSheetByName(RESULTAT_SHEET);
+
+  if (!källa) { SpreadsheetApp.getUi().alert('Fliken "Samlade resultat" hittades inte.'); return; }
+  if (!mål)   { SpreadsheetApp.getUi().alert('Fliken "' + RESULTAT_SHEET + '" hittades inte.'); return; }
+
+  var källData = källa.getDataRange().getValues();
+  var målData  = mål.getDataRange().getValues();
+
+  // Bygg karta: namn (lowercase) → radnummer i "Resultat" (1-baserat)
+  var målRader = {};
+  for (var i = 1; i < målData.length; i++) {
+    var n = String(målData[i][0] || '').trim();
+    if (n) målRader[n.toLowerCase()] = i + 1;
+  }
+
+  var uppdaterade = 0;
+  var hittasEj    = [];
+
+  for (var i = 1; i < källData.length; i++) {
+    var rad  = källData[i];
+    var namn = String(rad[0] || '').trim();
+    if (!namn) continue;
+
+    // Hämta betyg (B–G = index 1–6) och kommentarer (I–N = index 8–13)
+    var betyg     = rad.slice(1, 7);
+    var kommentar = rad.slice(8, 14);
+
+    var målRad = målRader[namn.toLowerCase()];
+    if (!målRad) { hittasEj.push(namn); continue; }
+
+    // Skriv varvat till C–N (kolumn 3–14): betyg[j] i col 3+j*2, kommentar[j] i col 4+j*2
+    var skrivData = [];
+    for (var j = 0; j < 6; j++) {
+      skrivData.push(betyg[j]     || '–');
+      skrivData.push(kommentar[j] || '');
+    }
+    mål.getRange(målRad, 3, 1, 12).setValues([skrivData]);
+    uppdaterade++;
+  }
+
+  var msg = uppdaterade + ' elev(er) kopierades till "' + RESULTAT_SHEET + '".';
+  if (hittasEj.length)
+    msg += '\n\nHittades inte i "' + RESULTAT_SHEET + '" (lägg till dem via Importera elever):\n' + hittasEj.join('\n');
+  SpreadsheetApp.getUi().alert(msg);
 }
 
 // ---------- BACKEND: HÄMTA ELEVDATA ----------
