@@ -17,11 +17,10 @@ const EPOST_KOL      = 15; // Kolumn O
 const INTERN_KOM_KOL = 16; // Kolumn P
 const TOKEN_KOL      = 17; // Kolumn Q
 
-// URL till detta Apps Script-projekt (omprovformulär + resultatsidor).
-// Sätts automatiskt när scriptet är driftsatt som webbapp.
-const OMPROV_URL = (function() {
+// Hämtar URL:en färskt varje gång så att arkiverade driftsättningar inte fastnar.
+function getOmprovUrl() {
   try { return ScriptApp.getService().getUrl() || ''; } catch(e) { return ''; }
-})();
+}
 
 const UPPGIFTER = [
   'Första världskriget',
@@ -58,6 +57,7 @@ function openSidebar() {
 
 // Visar lärarens direktlänk till betygspanelen som webbsida
 function visaLararUrl() {
+  var OMPROV_URL = getOmprovUrl();
   if (!OMPROV_URL) {
     SpreadsheetApp.getUi().alert(
       'Scriptet är inte driftsatt som webbapp ännu.\n\n' +
@@ -65,7 +65,7 @@ function visaLararUrl() {
     );
     return;
   }
-  var lararUrl = OMPROV_URL + '?view=larare';
+  var lararUrl = getOmprovUrl() + '?view=larare';
   var html = HtmlService.createHtmlOutput(
     '<div style="font-family:sans-serif;padding:24px;">'
     + '<p style="font-size:13px;color:#556070;margin-bottom:12px;">Bokmärk den här länken för enkel åtkomst till betygspanelen:</p>'
@@ -88,12 +88,10 @@ function oppnaForhandsgranskning() {
 
 // Anropas från preview.html när det körs inuti Sheets
 function getWebAppUrl() {
-  try { return ScriptApp.getService().getUrl() || ''; } catch(e) { return ''; }
+  return getOmprovUrl();
 }
 
 // ---------- IMPORTERA ELEVER ----------
-// Lägger till nya elever från det externa bladet. Befintliga rörs ej.
-// Genererar token för alla som saknar en.
 function importeraElever() {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(RESULTAT_SHEET);
@@ -111,12 +109,10 @@ function importeraElever() {
     sheet.appendRow(rubrik);
     sheet.setFrozenRows(1);
   } else {
-    // Säkerställ rubrikerna för O, P, Q
     sheet.getRange(1, EPOST_KOL).setValue('E-post');
     sheet.getRange(1, INTERN_KOM_KOL).setValue('Intern kommentar');
     sheet.getRange(1, TOKEN_KOL).setValue('Token');
 
-    // Generera tokens för befintliga elever som saknar en
     var befintlig = sheet.getDataRange().getValues();
     for (var r = 1; r < befintlig.length; r++) {
       if (befintlig[r][0] && !befintlig[r][TOKEN_KOL - 1]) {
@@ -140,7 +136,6 @@ function importeraElever() {
 
   var externData = externSheet.getDataRange().getValues();
 
-  // Karta över befintliga namn
   var befintligaNamn = {};
   var nuData = sheet.getDataRange().getValues();
   nuData.slice(1).forEach(function(row, idx) {
@@ -158,7 +153,6 @@ function importeraElever() {
     var nyckel = namn.toLowerCase();
 
     if (befintligaNamn[nyckel]) {
-      // Elev finns — fyll i e-post i kolumn O om den saknas
       var radNr   = befintligaNamn[nyckel];
       var aktuell = sheet.getRange(radNr, EPOST_KOL).getValue();
       if (!aktuell && epost) {
@@ -168,16 +162,14 @@ function importeraElever() {
       return;
     }
 
-    // Ny elev — bygg rad med rätt kolumnordning
-    // A=namn, B=tom, C–N=betyg/kommentar×6, O=epost, P=internKom, Q=token
     var radData = [namn, ''];
     for (var j = 0; j < UPPGIFTER.length; j++) {
-      radData.push('–');  // betyg
-      radData.push('');   // kommentar
+      radData.push('–');
+      radData.push('');
     }
-    radData.push(epost);           // O
-    radData.push('');              // P intern kommentar
-    radData.push(genereraToken()); // Q token
+    radData.push(epost);
+    radData.push('');
+    radData.push(genereraToken());
     sheet.appendRow(radData);
     befintligaNamn[nyckel] = sheet.getLastRow();
     tillagda++;
@@ -192,7 +184,6 @@ function importeraElever() {
 }
 
 // ---------- UPPDATERA E-POSTADRESSER ----------
-// Fyller i saknade e-postadresser i kolumn O från det externa bladet.
 function uppdateraEpostadresser() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RESULTAT_SHEET);
   if (!sheet) {
@@ -209,7 +200,6 @@ function uppdateraEpostadresser() {
     return;
   }
 
-  // Bygg karta extern: namn (lowercase) → e-post
   var externMap = {};
   externSheet.getDataRange().getValues().slice(1).forEach(function(row) {
     var n = String(row[0] || '').trim();
@@ -223,7 +213,7 @@ function uppdateraEpostadresser() {
   for (var i = 1; i < data.length; i++) {
     var namn = String(data[i][0] || '').trim();
     if (!namn) continue;
-    if (data[i][EPOST_KOL - 1]) continue; // e-post finns redan
+    if (data[i][EPOST_KOL - 1]) continue;
 
     var epost = externMap[namn.toLowerCase()];
     if (epost) {
@@ -246,8 +236,6 @@ function genereraToken() {
 }
 
 // ---------- KOPIERA BETYG FRÅN "Samlade resultat" ----------
-// "Samlade resultat": A=namn, B–G=betyg×6, I–N=kommentarer×6
-// "Resultat":         A=namn, C=betyg1, D=kommentar1, E=betyg2, … (varvat)
 function kopieraFranSamladeResultat() {
   var ss     = SpreadsheetApp.getActiveSpreadsheet();
   var källa  = ss.getSheetByName('Samlade resultat');
@@ -259,7 +247,6 @@ function kopieraFranSamladeResultat() {
   var källData = källa.getDataRange().getValues();
   var målData  = mål.getDataRange().getValues();
 
-  // Bygg karta: namn (lowercase) → radnummer i "Resultat" (1-baserat)
   var målRader = {};
   for (var i = 1; i < målData.length; i++) {
     var n = String(målData[i][0] || '').trim();
@@ -274,14 +261,12 @@ function kopieraFranSamladeResultat() {
     var namn = String(rad[0] || '').trim();
     if (!namn) continue;
 
-    // Hämta betyg (B–G = index 1–6) och kommentarer (I–N = index 8–13)
     var betyg     = rad.slice(1, 7);
     var kommentar = rad.slice(8, 14);
 
     var målRad = målRader[namn.toLowerCase()];
     if (!målRad) { hittasEj.push(namn); continue; }
 
-    // Skriv varvat till C–N (kolumn 3–14): betyg[j] i col 3+j*2, kommentar[j] i col 4+j*2
     var skrivData = [];
     for (var j = 0; j < 6; j++) {
       skrivData.push(betyg[j]     || '–');
@@ -310,9 +295,9 @@ function hamtaElevdata() {
         headers.push(u + ' – Betyg');
         headers.push(u + ' – Kommentar');
       });
-      headers.push('E-post');           // O
-      headers.push('Intern kommentar'); // P
-      headers.push('Token');            // Q
+      headers.push('E-post');
+      headers.push('Intern kommentar');
+      headers.push('Token');
       sheet.appendRow(headers);
       sheet.setFrozenRows(1);
     }
@@ -349,7 +334,6 @@ function hamtaElevdata() {
 }
 
 // ---------- BACKEND: SPARA ALLA ELEVER ----------
-// Skriver betyg (C–N) och intern kommentar (P). Rör ej e-post (O) eller token (Q).
 function sparaAllaElever(elever) {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(RESULTAT_SHEET);
@@ -358,15 +342,12 @@ function sparaAllaElever(elever) {
   elever.forEach(function(elev) {
     var rowNum = elev.radIndex + 1;
 
-    // Betyg och kommentarer: kolumn C–N (startkolumn 3, 12 värden)
     var gradeData = [];
     for (var j = 0; j < UPPGIFTER.length; j++) {
       gradeData.push(elev.betyg[j]     || '–');
       gradeData.push(elev.kommentar[j] || '');
     }
     sheet.getRange(rowNum, 3, 1, gradeData.length).setValues([gradeData]);
-
-    // Intern kommentar: kolumn P
     sheet.getRange(rowNum, INTERN_KOM_KOL).setValue(elev.internKommentar || '');
   });
 }
@@ -400,7 +381,7 @@ function skickaMailTillElev(radIndex) {
     kommentar.push(row[3 + j * 2] || '');
   }
 
-  var resultUrl = (OMPROV_URL && token) ? OMPROV_URL + '?t=' + token : null;
+  var resultUrl = token ? getOmprovUrl() + '?t=' + token : null;
   var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl);
   MailApp.sendEmail({ to: epost, subject: 'Dina resultat i Historia', htmlBody: html });
 
@@ -442,7 +423,7 @@ function skickaResultatmail() {
     }
 
     try {
-      var resultUrl = (OMPROV_URL && token) ? OMPROV_URL + '?t=' + token : null;
+      var resultUrl = token ? getOmprovUrl() + '?t=' + token : null;
       var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl);
       MailApp.sendEmail({ to: epost, subject: 'Dina resultat i Historia', htmlBody: html });
       skickade++;
@@ -497,7 +478,7 @@ function serveResultatSida(token) {
   ).setTitle('Ogiltig länk');
 }
 
-// Lärarens betygspanel som helsida (samma sidebar.html, men i webbläsaren)
+// Lärarens betygspanel som helsida
 function serveLararsida() {
   return HtmlService.createHtmlOutputFromFile('sidebar')
     .setTitle('Betygspanel – Historia')
@@ -505,8 +486,6 @@ function serveLararsida() {
 }
 
 // ---------- TA EMOT OMPROVS-ANMÄLAN ----------
-
-// Anropas via google.script.run från formuläret (undviker CORS-problem med fetch/POST)
 function registreraOmprov(email, exam, date) {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_NAME);
@@ -538,7 +517,6 @@ function registreraOmprov(email, exam, date) {
     { guests: email + ',' + TEACHER_EMAIL, sendInvites: true });
 }
 
-// doPost behålls som reserv (t.ex. direktanrop utanför webbläsaren)
 function doPost(e) {
   try {
     if (!e || !e.postData) throw new Error('Ingen postData mottagen');
