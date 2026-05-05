@@ -281,7 +281,9 @@
     }
     .oversikt-tabell {
       border-collapse: collapse;
-      width: auto;        /* Krymper till innehållet — scrollas vid behov */
+      table-layout: fixed;
+      width: 55vw;
+      min-width: 480px;
     }
     .oversikt-tabell thead th {
       position: sticky;
@@ -307,8 +309,9 @@
     }
     .oversikt-tabell th.namn-kol {
       text-align: left;
+      width: 170px;
       padding-right: 10px;
-      z-index: 3;         /* Hörncell: sticky både horisontellt och vertikalt */
+      z-index: 3;
     }
     .oversikt-tabell td {
       padding: 2px 1px;
@@ -326,9 +329,9 @@
     }
     .oversikt-tabell td.namn-cell:hover { color: var(--amber); }
     .oversikt-tabell .betyg-select {
-      width: 38px;
-      height: 22px;
-      font-size: 11px;
+      width: 90%;
+      height: 26px;
+      font-size: 12px;
     }
     .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
     .oversikt-tabell tbody tr:hover td.namn-cell { background: #F0EDE6; }
@@ -390,7 +393,6 @@
 </div>
 
 <script>
-// ── State ──────────────────────────────────────────────────
 var state = {
   elever: [],
   uppgifter: [],
@@ -402,7 +404,6 @@ var state = {
   felmeddelande: '',
 };
 
-// ── Init ───────────────────────────────────────────────────
 google.script.run
   .withSuccessHandler(function(data) {
     if (data.fel) { visaFel(data.fel); return; }
@@ -413,7 +414,6 @@ google.script.run
   .withFailureHandler(function(err) { visaFel(err.message); })
   .hamtaElevdata();
 
-// ── Render ─────────────────────────────────────────────────
 function render() {
   var app = document.getElementById('app');
   app.innerHTML = '';
@@ -435,7 +435,6 @@ function render() {
   renderSparaRad(app);
 }
 
-// ── Vy: per uppgift ────────────────────────────────────────
 function renderVyUppgift(app) {
   var bar = el('div', { className: 'uppgift-bar' });
   var lbl = el('label'); lbl.textContent = 'Uppgift'; bar.appendChild(lbl);
@@ -470,7 +469,6 @@ function renderVyUppgift(app) {
   app.appendChild(lista);
 }
 
-// ── Vy: per elev ──────────────────────────────────────────
 function renderVyElev(app) {
   var lista = el('div', { className: 'elevlista' });
 
@@ -556,7 +554,6 @@ function renderVyElev(app) {
   app.appendChild(lista);
 }
 
-// ── Vy: översikt (alla elever × alla prov) ─────────────────
 var KORT_NAMN = ['FVK','MKT','AVK','EUR','SVE','VRL'];
 
 function renderVyOversikt(app) {
@@ -637,7 +634,6 @@ function renderVyOversikt(app) {
   app.appendChild(wrap);
 }
 
-// ── Spara-rad ──────────────────────────────────────────────
 function renderSparaRad(app) {
   var rad = el('div', { className: 'spara-rad' });
   var btn = el('button', { className: 'spara-knapp' + (state.sparatOk ? ' sparat' : '') });
@@ -654,7 +650,6 @@ function renderSparaRad(app) {
   app.appendChild(rad);
 }
 
-// ── Spara ──────────────────────────────────────────────────
 function sparaAlla() {
   state.sparar = true; state.felmeddelande = ''; render();
   google.script.run
@@ -668,7 +663,6 @@ function sparaAlla() {
     .sparaAllaElever(state.elever);
 }
 
-// ── Helpers ────────────────────────────────────────────────
 function el(tag, props) {
   var e = document.createElement(tag);
   if (props) Object.keys(props).forEach(function(k) { e[k] = props[k]; });
