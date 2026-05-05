@@ -155,11 +155,12 @@
       appearance: none;
       -webkit-appearance: none;
     }
-    .grade-A  { background: #E8F5EE; color: #1A7A4A; }
-    .grade-C  { background: #EBF0FA; color: #2355A0; }
-    .grade-E  { background: #FDF0E8; color: #C05A20; }
-    .grade-F  { background: #FDEAEA; color: #B52020; }
-    .grade-da { background: #F0EDE6; color: #96A3B0; }
+    /* ── Betygsfärger — ändra hex-koderna här ── */
+    .grade-A  { background: #C8F0D8; color: #1A6B35; } /* A  – mörkgrön   */
+    .grade-C  { background: #D8EEC8; color: #2A6020; } /* C  – mellangrön */
+    .grade-E  { background: #E8F5DC; color: #3A7030; } /* E  – ljusgrön   */
+    .grade-F  { background: #FFD0CC; color: #C02010; } /* F  – röd        */
+    .grade-da { background: #F0EDE6; color: #96A3B0; } /* –  – grå        */
 
     /* Detaljvy (expanderad elev) */
     .elev-detalj {
@@ -280,10 +281,13 @@
     }
     .oversikt-tabell {
       border-collapse: collapse;
-      width: 100%;
-      min-width: 380px;
+      width: auto;        /* Krymper till innehållet — scrollas vid behov */
     }
-    .oversikt-tabell th {
+    .oversikt-tabell thead th {
+      position: sticky;
+      top: 0;
+      background: var(--white);
+      z-index: 1;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
@@ -294,11 +298,17 @@
       border-bottom: 2px solid var(--fog);
       white-space: nowrap;
     }
+    .oversikt-tabell th.namn-kol,
+    .oversikt-tabell td.namn-cell {
+      position: sticky;
+      left: 0;
+      background: var(--white);
+      z-index: 2;
+    }
     .oversikt-tabell th.namn-kol {
       text-align: left;
-      width: 1px;
-      white-space: nowrap;
-      padding-right: 8px;
+      padding-right: 10px;
+      z-index: 3;         /* Hörncell: sticky både horisontellt och vertikalt */
     }
     .oversikt-tabell td {
       padding: 2px 1px;
@@ -310,18 +320,18 @@
       font-size: 11px;
       font-weight: 500;
       white-space: nowrap;
-      width: 1px;
-      padding-right: 8px;
+      padding-right: 10px;
       color: var(--ink);
       cursor: pointer;
     }
     .oversikt-tabell td.namn-cell:hover { color: var(--amber); }
     .oversikt-tabell .betyg-select {
-      width: 32px;
+      width: 38px;
       height: 22px;
       font-size: 11px;
     }
     .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
+    .oversikt-tabell tbody tr:hover td.namn-cell { background: #F0EDE6; }
     .oversikt-kom-rad td {
       background: #FFFBF0;
       padding: 8px 10px;
@@ -571,8 +581,8 @@ function renderVyOversikt(app) {
   var th0   = el('th', { className: 'namn-kol' }); th0.textContent = 'Elev'; hr.appendChild(th0);
   state.uppgifter.forEach(function(u, i) {
     var th = el('th');
-    th.textContent = KORT_NAMN[i] || (i + 1);
-    th.title = u;
+    th.textContent = 'Prov ' + (i + 1);
+    th.title = u;   /* tooltip med fullständigt namn vid hover */
     hr.appendChild(th);
   });
   thead.appendChild(hr);
@@ -638,7 +648,7 @@ function renderVyOversikt(app) {
   // Förklaring
   var legend = el('div', { className: 'oversikt-legend' });
   state.uppgifter.forEach(function(u, i) {
-    var s = el('span'); s.textContent = (KORT_NAMN[i] || (i+1)) + ' = ' + u; legend.appendChild(s);
+    var s = el('span'); s.textContent = 'Prov ' + (i + 1) + ' = ' + u; legend.appendChild(s);
   });
   wrap.appendChild(legend);
   app.appendChild(wrap);
