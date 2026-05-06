@@ -13,7 +13,6 @@ const OMRADEN = [
   'Mellankrigstiden',
   'Andra världskriget',
   'Europa efter världskrigen',
-  'Sverige efter världskrigen',
   'Världen efter världskrigen',
 ];
 
@@ -76,7 +75,7 @@ function updateSheet(sheetId, studentName, results, comments) {
     // G8 (sammanslaget med G9) visar täljaren + snedstreck
     sheet.getRange(8, 7).setValue(count + '/');
     // I8 visar nämnaren
-    sheet.getRange(8, 9).setValue(6);
+    sheet.getRange(8, 9).setValue(5);
 
     // Färglägg bråkcellerna på samma sätt som G7
     var fracG = sheet.getRange(8, 7, 2, 1); // G8:G9
@@ -87,7 +86,7 @@ function updateSheet(sheetId, studentName, results, comments) {
     fracI8.setBackground(fracBg);
     fracI9.setBackground(fracBg);
 
-    Logger.log(`Uppdaterat kalkylblad för ${studentName}: ${count}/6 godkända.`);
+    Logger.log(`Uppdaterat kalkylblad för ${studentName}: ${count}/5 godkända.`);
   } catch (error) {
     Logger.log(`Fel vid uppdatering för ${studentName}: ${error.message}`);
   }

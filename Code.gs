@@ -46,7 +46,6 @@ const UPPGIFTER = [
   'Mellankrigstiden',
   'Andra världskriget',
   'Europa efter världskrigen',
-  'Sverige efter världskrigen',
   'Världen efter världskrigen',
 ];
 
