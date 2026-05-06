@@ -17,9 +17,28 @@ const EPOST_KOL      = 15; // Kolumn O
 const INTERN_KOM_KOL = 16; // Kolumn P
 const TOKEN_KOL      = 17; // Kolumn Q
 
-// Hämtar URL:en färskt varje gång så att arkiverade driftsättningar inte fastnar.
+// Hämtar sparad webbapp-URL från Script Properties (sätts via menyval).
 function getOmprovUrl() {
-  try { return ScriptApp.getService().getUrl() || ''; } catch(e) { return ''; }
+  try {
+    var stored = PropertiesService.getScriptProperties().getProperty('WEBAPP_URL');
+    if (stored) return stored;
+    return ScriptApp.getService().getUrl() || '';
+  } catch(e) { return ''; }
+}
+
+// Körs en gång via Historia-menyn när ny driftsättning skapas.
+function sparaWebAppUrl() {
+  var ui  = SpreadsheetApp.getUi();
+  var res = ui.prompt(
+    'Spara webbapp-URL',
+    'Klistra in URL:en till driftsättningen (slutar med /exec):',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (res.getSelectedButton() !== ui.Button.OK) return;
+  var url = res.getResponseText().trim();
+  if (!url.startsWith('https://')) { ui.alert('Ogiltig URL – börjar inte med https://'); return; }
+  PropertiesService.getScriptProperties().setProperty('WEBAPP_URL', url);
+  ui.alert('URL sparad! Framtida mejl använder nu denna länk.');
 }
 
 const UPPGIFTER = [
@@ -46,6 +65,8 @@ function onOpen() {
     .addItem('Skicka resultatmejl till alla',       'skickaResultatmail')
     .addSeparator()
     .addItem('Skapa QR-kod (omprov)',               'skapaQRkod')
+    .addSeparator()
+    .addItem('Spara webbapp-URL',                   'sparaWebAppUrl')
     .addToUi();
 }
 
