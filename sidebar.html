@@ -28,7 +28,6 @@
       flex-direction: column;
     }
 
-    /* Header */
     .header {
       background: var(--ink);
       padding: 12px 14px 10px;
@@ -48,7 +47,6 @@
       color: var(--parchment);
     }
 
-    /* Uppgiftsväljare */
     .uppgift-bar {
       background: var(--white);
       border-bottom: 1px solid var(--fog);
@@ -81,7 +79,6 @@
       color: var(--crimson);
     }
 
-    /* Vy-knappar */
     .vy-knappar {
       display: flex;
       gap: 4px;
@@ -107,7 +104,6 @@
       border-color: var(--ink);
     }
 
-    /* Elevlista */
     .elevlista {
       flex: 1;
       overflow-y: auto;
@@ -127,7 +123,6 @@
       transition: border-color 0.1s;
     }
     .elev-rad:hover { border-color: var(--slate); }
-    .elev-rad.expanderad { border-color: var(--ink); }
 
     .elev-namn {
       flex: 0 0 auto;
@@ -137,13 +132,7 @@
       text-overflow: ellipsis;
       max-width: 120px;
     }
-    .elev-badges {
-      display: flex;
-      gap: 3px;
-      flex-shrink: 0;
-    }
 
-    /* Betyg */
     .betyg-select {
       border: none;
       outline: none;
@@ -157,62 +146,12 @@
       appearance: none;
       -webkit-appearance: none;
     }
-    /* ── Betygsfärger — ändra hex-koderna här ── */
-    .grade-A  { background: #C8F0D8; color: #1A6B35; } /* A  – mörkgrön   */
-    .grade-C  { background: #D8EEC8; color: #2A6020; } /* C  – mellangrön */
-    .grade-E  { background: #E8F5DC; color: #3A7030; } /* E  – ljusgrön   */
-    .grade-F  { background: #FFD0CC; color: #C02010; } /* F  – röd        */
-    .grade-da { background: #F0EDE6; color: #96A3B0; } /* –  – grå        */
+    .grade-A  { background: #C8F0D8; color: #1A6B35; }
+    .grade-C  { background: #D8EEC8; color: #2A6020; }
+    .grade-E  { background: #E8F5DC; color: #3A7030; }
+    .grade-F  { background: #FFD0CC; color: #C02010; }
+    .grade-da { background: #F0EDE6; color: #96A3B0; }
 
-    .intern-preview {
-      font-size: 11px;
-      color: var(--mist);
-      font-style: italic;
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-left: 8px;
-      align-self: center;
-    }
-    .intern-preview.har-text {
-      color: #A07800;
-    }
-
-    /* Detaljvy (expanderad elev) */
-    .elev-detalj {
-      background: var(--parchment);
-      border: 1px solid var(--fog);
-      border-top: none;
-      border-radius: 0 0 6px 6px;
-      padding: 10px;
-      margin-top: -4px;
-      margin-bottom: 4px;
-    }
-    .detalj-uppgift {
-      margin-bottom: 8px;
-    }
-    .detalj-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--mist);
-      margin-bottom: 3px;
-    }
-    .detalj-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-    .detalj-uppgift-naam {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ink);
-      flex: 1;
-    }
     textarea {
       width: 100%;
       border: 1px solid var(--fog);
@@ -227,23 +166,6 @@
     }
     textarea::placeholder { color: var(--mist); }
 
-    .intern-box {
-      background: #FFFBF0;
-      border: 1px dashed var(--amber);
-      border-radius: 6px;
-      padding: 8px;
-      margin-top: 6px;
-    }
-    .intern-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--amber);
-      margin-bottom: 4px;
-    }
-
-    /* Spara-raden */
     .spara-rad {
       padding: 10px 12px;
       background: var(--white);
@@ -272,7 +194,6 @@
     }
     .status-text.fel { color: var(--crimson); }
 
-    /* Skicka mejl-knapp (per elev) */
     .mail-knapp {
       width: 100%;
       margin-top: 10px;
@@ -291,7 +212,6 @@
     .mail-knapp.skickat { background: var(--emerald); color: #fff; border-color: var(--emerald); }
     .mail-knapp.fel { background: #FDEAEA; color: var(--crimson); border-color: #E8AAAA; }
 
-    /* Översiktsvy */
     .oversikt-wrap {
       flex: 1;
       overflow: auto;
@@ -300,8 +220,8 @@
     .oversikt-tabell {
       border-collapse: collapse;
       table-layout: fixed;
-      width: 55vw;
-      min-width: 480px;
+      width: 75vw;
+      min-width: 600px;
     }
     .oversikt-tabell thead th {
       position: sticky;
@@ -351,8 +271,25 @@
       height: 26px;
       font-size: 12px;
     }
+    .oversikt-tabell th.intern-kol { width: 160px; text-align: left; padding-left: 6px; }
+    .oversikt-tabell td.intern-cell { padding: 2px 4px; }
+    .intern-cell textarea {
+      width: 100%;
+      font-size: 11px;
+      padding: 3px 5px;
+      border: 1px solid var(--fog);
+      border-radius: 4px;
+      background: #FFFBF0;
+      resize: none;
+      font-family: inherit;
+      color: #A07800;
+      line-height: 1.3;
+      height: 30px;
+    }
+    .intern-cell textarea:focus { border-color: var(--amber); outline: none; background: #fff; }
     .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
     .oversikt-tabell tbody tr:hover td.namn-cell { background: #F0EDE6; }
+    .oversikt-tabell tbody tr:hover td.intern-cell { background: #FFFBF0; }
     .oversikt-kom-rad td {
       background: #FFFBF0;
       padding: 8px 10px;
@@ -390,7 +327,6 @@
     }
     .oversikt-legend span { display: inline-block; margin-right: 10px; }
 
-    /* Laddare */
     .laddar {
       text-align: center;
       padding: 40px 0;
@@ -441,14 +377,12 @@ function render() {
   app.style.overflow = 'hidden';
 
   var vyBar = el('div', { className: 'vy-knappar' });
-  vyBar.appendChild(knapp('Per uppgift', state.vy === 'uppgift', function() { state.vy = 'uppgift'; state.expanderadElev = null; render(); }));
-  vyBar.appendChild(knapp('Per elev',    state.vy === 'elev',    function() { state.vy = 'elev';    state.expanderadElev = null; render(); }));
-  vyBar.appendChild(knapp('Översikt',    state.vy === 'oversikt',function() { state.vy = 'oversikt';state.expanderadElev = null; render(); }));
+  vyBar.appendChild(knapp('Per uppgift', state.vy === 'uppgift',  function() { state.vy = 'uppgift';  state.expanderadElev = null; render(); }));
+  vyBar.appendChild(knapp('Översikt',    state.vy === 'oversikt', function() { state.vy = 'oversikt'; state.expanderadElev = null; render(); }));
   app.appendChild(vyBar);
 
-  if (state.vy === 'uppgift')   renderVyUppgift(app);
-  else if (state.vy === 'elev') renderVyElev(app);
-  else                          renderVyOversikt(app);
+  if (state.vy === 'uppgift') renderVyUppgift(app);
+  else                        renderVyOversikt(app);
 
   renderSparaRad(app);
 }
@@ -487,96 +421,6 @@ function renderVyUppgift(app) {
   app.appendChild(lista);
 }
 
-function renderVyElev(app) {
-  var lista = el('div', { className: 'elevlista' });
-
-  state.elever.forEach(function(elev, idx) {
-    var expanderad = state.expanderadElev === idx;
-
-    var rad = el('div', { className: 'elev-rad' + (expanderad ? ' expanderad' : '') });
-    rad.addEventListener('click', function(e) {
-      if (e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-      state.expanderadElev = expanderad ? null : idx;
-      render();
-    });
-
-    var namn = el('span', { className: 'elev-namn' }); namn.textContent = elev.namn; rad.appendChild(namn);
-
-    var badges = el('div', { className: 'elev-badges' });
-    elev.betyg.forEach(function(b) {
-      var badge = el('span', { className: 'betyg-select ' + gradeKlass(b) });
-      badge.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:28px;height:24px;border-radius:5px;font-size:11px;font-weight:700;';
-      badge.textContent = b;
-      badges.appendChild(badge);
-    });
-    rad.appendChild(badges);
-
-    var internPrev = el('span', { className: 'intern-preview' + (elev.internKommentar ? ' har-text' : '') });
-    internPrev.textContent = elev.internKommentar ? '🔒 ' + elev.internKommentar : '';
-    rad.appendChild(internPrev);
-
-    lista.appendChild(rad);
-
-    if (expanderad) {
-      var detalj = el('div', { className: 'elev-detalj' });
-
-      state.uppgifter.forEach(function(uppgift, i) {
-        var block = el('div', { className: 'detalj-uppgift' });
-        var row = el('div', { className: 'detalj-row' });
-        var uNamn = el('span', { className: 'detalj-uppgift-naam' }); uNamn.textContent = uppgift; row.appendChild(uNamn);
-        row.appendChild(betygSelect(elev.betyg[i], function(val) { state.elever[idx].betyg[i] = val; render(); }));
-        block.appendChild(row);
-        var komLbl = el('div', { className: 'detalj-label' }); komLbl.textContent = 'Kommentar till eleven'; block.appendChild(komLbl);
-        var ta = el('textarea'); ta.rows = 2; ta.placeholder = 'Kommentar som skickas till eleven…';
-        ta.value = elev.kommentar[i];
-        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; });
-        block.appendChild(ta);
-        detalj.appendChild(block);
-      });
-
-      var internBox = el('div', { className: 'intern-box' });
-      var internLbl = el('div', { className: 'intern-label' }); internLbl.textContent = '🔒 Intern anteckning'; internBox.appendChild(internLbl);
-      var internTa = el('textarea'); internTa.rows = 2; internTa.placeholder = 'Bara för dig — syns inte för eleven';
-      internTa.value = elev.internKommentar;
-      internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
-      internBox.appendChild(internTa);
-      detalj.appendChild(internBox);
-
-      var mailBtn = el('button', { className: 'mail-knapp' });
-      mailBtn.textContent = '📧 Skicka resultatmejl';
-      (function(e, btn) {
-        btn.addEventListener('click', function(ev) {
-          ev.stopPropagation();
-          btn.disabled = true;
-          btn.textContent = 'Skickar…';
-          btn.className = 'mail-knapp';
-          google.script.run
-            .withSuccessHandler(function(namn) {
-              btn.textContent = '✓ Skickat till ' + namn;
-              btn.className = 'mail-knapp skickat';
-              setTimeout(function() {
-                btn.textContent = '📧 Skicka resultatmejl';
-                btn.className = 'mail-knapp';
-                btn.disabled = false;
-              }, 3000);
-            })
-            .withFailureHandler(function(err) {
-              btn.textContent = '⚠ ' + err.message;
-              btn.className = 'mail-knapp fel';
-              btn.disabled = false;
-            })
-            .skickaMailTillElev(e.radIndex);
-        });
-      })(elev, mailBtn);
-      detalj.appendChild(mailBtn);
-
-      lista.appendChild(detalj);
-    }
-  });
-
-  app.appendChild(lista);
-}
-
 var KORT_NAMN = ['FVK','MKT','AVK','EUR','SVE','VRL'];
 
 function renderVyOversikt(app) {
@@ -587,16 +431,14 @@ function renderVyOversikt(app) {
   var hr    = el('tr');
   var th0   = el('th', { className: 'namn-kol' }); th0.textContent = 'Elev'; hr.appendChild(th0);
   state.uppgifter.forEach(function(u, i) {
-    var th = el('th');
-    th.textContent = 'Prov ' + (i + 1);
-    th.title = u;
-    hr.appendChild(th);
+    var th = el('th'); th.textContent = 'Prov ' + (i + 1); th.title = u; hr.appendChild(th);
   });
+  var thIntern = el('th', { className: 'intern-kol' }); thIntern.textContent = '🔒 Intern'; hr.appendChild(thIntern);
   thead.appendChild(hr);
   tbl.appendChild(thead);
 
   var tbody = el('tbody');
-  var kolAntal = state.uppgifter.length + 1;
+  var kolAntal = state.uppgifter.length + 2;
 
   state.elever.forEach(function(elev, idx) {
     var expanderad = state.expanderadElev === idx;
@@ -615,6 +457,16 @@ function renderVyOversikt(app) {
       td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; }));
       tr.appendChild(td);
     });
+
+    var tdIntern = el('td', { className: 'intern-cell' });
+    var internTa = el('textarea');
+    internTa.placeholder = '–';
+    internTa.value = elev.internKommentar || '';
+    internTa.addEventListener('click', function(e) { e.stopPropagation(); });
+    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
+    tdIntern.appendChild(internTa);
+    tr.appendChild(tdIntern);
+
     tbody.appendChild(tr);
 
     if (expanderad) {
@@ -632,14 +484,27 @@ function renderVyOversikt(app) {
         grid.appendChild(block);
       });
 
-      var internBlock = el('div', { className: 'oversikt-kom-block' });
-      internBlock.style.gridColumn = '1 / -1';
-      var internLbl = el('div', { className: 'oversikt-kom-label' }); internLbl.textContent = '🔒 Intern anteckning'; internBlock.appendChild(internLbl);
-      var internTa  = el('textarea'); internTa.rows = 2; internTa.placeholder = 'Bara för dig…';
-      internTa.value = elev.internKommentar || '';
-      internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
-      internBlock.appendChild(internTa);
-      grid.appendChild(internBlock);
+      var mailBtn = el('button', { className: 'mail-knapp' });
+      mailBtn.textContent = '📧 Skicka resultatmejl';
+      (function(e, btn) {
+        btn.addEventListener('click', function(ev) {
+          ev.stopPropagation();
+          btn.disabled = true; btn.textContent = 'Skickar…'; btn.className = 'mail-knapp';
+          google.script.run
+            .withSuccessHandler(function(namn) {
+              btn.textContent = '✓ Skickat till ' + namn; btn.className = 'mail-knapp skickat';
+              setTimeout(function() { btn.textContent = '📧 Skicka resultatmejl'; btn.className = 'mail-knapp'; btn.disabled = false; }, 3000);
+            })
+            .withFailureHandler(function(err) {
+              btn.textContent = '⚠ ' + err.message; btn.className = 'mail-knapp fel'; btn.disabled = false;
+            })
+            .skickaMailTillElev(e.radIndex);
+        });
+      })(elev, mailBtn);
+      var mailBlock = el('div', { className: 'oversikt-kom-block' });
+      mailBlock.style.gridColumn = '1 / -1';
+      mailBlock.appendChild(mailBtn);
+      grid.appendChild(mailBlock);
 
       komTd.appendChild(grid);
       komTr.appendChild(komTd);
