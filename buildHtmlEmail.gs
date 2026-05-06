@@ -3,7 +3,7 @@
 // buildResultatSida — elevens personliga resultatsida (webb)
 // ============================================================
 
-// ── Delade hjälpfunktioner ──────────────────────────────────
+// ── Delade hjälpfunktioner ────────────────────────────────────────────
 
 function gradeColor_(g) {
   if (g === 'A') return { bg: '#E8F5EE', color: '#1A7A4A' };
@@ -38,14 +38,14 @@ function warnBlock_(warnLevel, resultUrl) {
     warnTitle = 'Du har inte klarat de två första proven ännu';
     warnBody  = 'Det är helt okej — men det är bra att börja tänka på din studieteknik och eventuellt boka in ett omprov.';
     ctaLabel  = 'Anmäl dig till omprov →';
-    ctaHref   = OMPROV_URL;
+    ctaHref   = getOmprovUrl();
     ctaBg = '#B52020'; ctaColor = '#fff';
     tipsHtml  = tips;
   } else if (warnLevel === 2) {
     warnTitle = 'Du har inte klarat tre prov — det är dags att agera';
     warnBody  = 'För att klara kursen krävs minst 4 godkända prov. Du behöver höra av dig till mig så vi kan lägga upp en plan tillsammans.';
     ctaLabel  = 'Anmäl dig till omprov →';
-    ctaHref   = OMPROV_URL;
+    ctaHref   = getOmprovUrl();
     ctaBg = '#B52020'; ctaColor = '#fff';
     tipsHtml  = tips;
   } else {
@@ -76,7 +76,7 @@ function warnLevel_(results) {
   return 1;
 }
 
-// ── buildHtmlEmail ──────────────────────────────────────────
+// ── buildHtmlEmail ──────────────────────────────────────────────
 // resultUrl (valfri): länk till elevens personliga resultatsida
 function buildHtmlEmail(studentName, results, comments, resultUrl) {
 
@@ -154,7 +154,7 @@ function buildHtmlEmail(studentName, results, comments, resultUrl) {
   '</body></html>';
 }
 
-// ── buildResultatSida ───────────────────────────────────────
+// ── buildResultatSida ─────────────────────────────────────────────
 // Elevens personliga resultatsida — returnerar fullständig HTML-sträng
 function buildResultatSida(studentName, results, comments) {
 
@@ -211,7 +211,6 @@ function buildResultatSida(studentName, results, comments) {
       '.info-text{font-family:"Spectral",Georgia,serif;font-style:italic;font-size:13px;color:#556070;line-height:1.75}' +
       '.cta-knapp{display:block;width:100%;padding:15px;background:#0F1B2D;color:#F7F4EE;text-decoration:none;border-radius:10px;font-size:15px;font-weight:700;text-align:center;margin-bottom:14px}' +
       '.footer{font-size:11px;color:#96A3B0;text-align:center;padding-top:4px}' +
-      // Warning-block återanvänder email-tabellerna (inline styles)
     '</style>' +
   '</head>' +
   '<body>' +
@@ -221,14 +220,13 @@ function buildResultatSida(studentName, results, comments) {
       '<div class="header-sub">Dina resultat och kommentarer</div>' +
     '</div>' +
     '<div class="content">' +
-      // Varningsblock (återanvänder tabell-HTML från buildHtmlEmail)
       (warningHtml ? '<div style="margin-top:0;">' + warningHtml + '</div>' : '') +
       '<div class="trafikljus">' +
         '<div class="trafikljus-siffra">' + count + '/6</div>' +
         '<div class="trafikljus-label">' + tcLabel + '</div>' +
       '</div>' +
       '<div class="kort">' + provRader + '</div>' +
-      '<a class="cta-knapp" href="' + OMPROV_URL + '">Anmäl dig till omprov →</a>' +
+      '<a class="cta-knapp" href="' + getOmprovUrl() + '">Anmäl dig till omprov →</a>' +
       '<div class="info-kort">' +
         '<p class="info-text">För godkänt på kursen krävs 4 av 6 godkända prov. Omprov planeras vid behov — alltid onsdagar kl. 14:45–16:15.</p>' +
       '</div>' +
