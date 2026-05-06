@@ -130,15 +130,17 @@
     .elev-rad.expanderad { border-color: var(--ink); }
 
     .elev-namn {
-      flex: 1;
+      flex: 0 0 auto;
       font-size: 13px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 120px;
     }
     .elev-badges {
       display: flex;
       gap: 3px;
+      flex-shrink: 0;
     }
 
     /* Betyg */
@@ -161,6 +163,22 @@
     .grade-E  { background: #E8F5DC; color: #3A7030; } /* E  – ljusgrön   */
     .grade-F  { background: #FFD0CC; color: #C02010; } /* F  – röd        */
     .grade-da { background: #F0EDE6; color: #96A3B0; } /* –  – grå        */
+
+    .intern-preview {
+      font-size: 11px;
+      color: var(--mist);
+      font-style: italic;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: 8px;
+      align-self: center;
+    }
+    .intern-preview.har-text {
+      color: #A07800;
+    }
 
     /* Detaljvy (expanderad elev) */
     .elev-detalj {
@@ -492,6 +510,11 @@ function renderVyElev(app) {
       badges.appendChild(badge);
     });
     rad.appendChild(badges);
+
+    var internPrev = el('span', { className: 'intern-preview' + (elev.internKommentar ? ' har-text' : '') });
+    internPrev.textContent = elev.internKommentar ? '🔒 ' + elev.internKommentar : '';
+    rad.appendChild(internPrev);
+
     lista.appendChild(rad);
 
     if (expanderad) {
