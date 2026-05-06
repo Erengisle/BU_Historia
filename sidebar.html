@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    (function() {
+      var m = document.createElement('meta');
+      m.name = 'viewport';
+      m.content = 'width=device-width, initial-scale=1';
+      document.head.appendChild(m);
+    })();
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -331,6 +339,18 @@
       padding: 40px 0;
       color: var(--mist);
       font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      .oversikt-tabell { width: 100%; min-width: unset; table-layout: auto; }
+      .oversikt-tabell th.intern-kol { width: 120px; }
+      .oversikt-tabell th, .oversikt-tabell td { font-size: 11px; padding: 3px 2px; }
+      .oversikt-tabell th.namn-kol { width: 100px; }
+      .oversikt-tabell .betyg-select { width: 36px; font-size: 11px; }
+      .intern-cell textarea { height: 36px; font-size: 10px; }
+      .spara-knapp { font-size: 14px; padding: 12px; }
+      .vy-knapp { font-size: 12px; padding: 7px; }
+      .header-title { font-size: 14px; }
     }
   </style>
 </head>
