@@ -47,63 +47,6 @@
       color: var(--parchment);
     }
 
-    .uppgift-bar {
-      background: var(--white);
-      border-bottom: 1px solid var(--fog);
-      padding: 10px 12px;
-      flex-shrink: 0;
-    }
-    .uppgift-bar label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--mist);
-      display: block;
-      margin-bottom: 5px;
-    }
-    .uppgift-bar select {
-      width: 100%;
-      border: 1px solid var(--fog);
-      border-radius: 6px;
-      padding: 7px 10px;
-      font-size: 13px;
-      color: var(--ink);
-      background: var(--white);
-      cursor: pointer;
-    }
-    .saknas-varning {
-      margin-top: 5px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--crimson);
-    }
-
-    .vy-knappar {
-      display: flex;
-      gap: 4px;
-      padding: 8px 12px;
-      background: var(--white);
-      border-bottom: 1px solid var(--fog);
-      flex-shrink: 0;
-    }
-    .vy-knapp {
-      flex: 1;
-      padding: 5px;
-      font-size: 11px;
-      font-weight: 600;
-      border: 1px solid var(--fog);
-      border-radius: 5px;
-      background: var(--parchment);
-      color: var(--slate);
-      cursor: pointer;
-    }
-    .vy-knapp.aktiv {
-      background: var(--ink);
-      color: var(--parchment);
-      border-color: var(--ink);
-    }
-
     .elevlista {
       flex: 1;
       overflow-y: auto;
@@ -341,7 +284,6 @@
       .oversikt-tabell .betyg-select { width: 36px; font-size: 11px; }
       .intern-cell textarea { height: 36px; font-size: 10px; }
       .spara-knapp { font-size: 14px; padding: 12px; }
-      .vy-knapp { font-size: 12px; padding: 7px; }
       .header-title { font-size: 14px; }
     }
   </style>
@@ -361,9 +303,7 @@
 var state = {
   elever: [],
   uppgifter: [],
-  valdUppgift: 0,
   expanderadElev: null,
-  vy: 'uppgift',
   sparar: false,
   sparatOk: false,
   felmeddelande: '',
@@ -387,51 +327,10 @@ function render() {
   app.style.flex = '1';
   app.style.overflow = 'hidden';
 
-  var vyBar = el('div', { className: 'vy-knappar' });
-  vyBar.appendChild(knapp('Per uppgift', state.vy === 'uppgift',  function() { state.vy = 'uppgift';  state.expanderadElev = null; render(); }));
-  vyBar.appendChild(knapp('Översikt',    state.vy === 'oversikt', function() { state.vy = 'oversikt'; state.expanderadElev = null; render(); }));
-  app.appendChild(vyBar);
-
-  if (state.vy === 'uppgift') renderVyUppgift(app);
-  else                        renderVyOversikt(app);
+  renderVyOversikt(app);
 
   renderSparaRad(app);
 }
-
-function renderVyUppgift(app) {
-  var bar = el('div', { className: 'uppgift-bar' });
-  var lbl = el('label'); lbl.textContent = 'Uppgift'; bar.appendChild(lbl);
-  var sel = el('select');
-  state.uppgifter.forEach(function(u, i) {
-    var opt = el('option'); opt.value = i; opt.textContent = u;
-    if (i === state.valdUppgift) opt.selected = true;
-    sel.appendChild(opt);
-  });
-  sel.addEventListener('change', function() { state.valdUppgift = Number(this.value); render(); });
-  bar.appendChild(sel);
-
-  var saknar = state.elever.filter(function(e) { return e.betyg[state.valdUppgift] === '–'; }).length;
-  if (saknar > 0) {
-    var warn = el('div', { className: 'saknas-varning' });
-    warn.textContent = '⚠ ' + saknar + ' elev' + (saknar > 1 ? 'er' : '') + ' saknar betyg';
-    bar.appendChild(warn);
-  }
-  app.appendChild(bar);
-
-  var lista = el('div', { className: 'elevlista' });
-  state.elever.forEach(function(elev, idx) {
-    var rad = el('div', { className: 'elev-rad' });
-    var namn = el('span', { className: 'elev-namn' }); namn.textContent = elev.namn; rad.appendChild(namn);
-    var bSel = betygSelect(elev.betyg[state.valdUppgift], function(val) {
-      state.elever[idx].betyg[state.valdUppgift] = val;
-      render();
-    });
-    rad.appendChild(bSel);
-    lista.appendChild(rad);
-  });
-  app.appendChild(lista);
-}
-
 
 function renderVyOversikt(app) {
   var wrap = el('div', { className: 'oversikt-wrap' });
@@ -588,11 +487,6 @@ function betygSelect(value, onChange) {
     onChange(this.value);
   });
   return sel;
-}
-
-function knapp(text, aktiv, onClick) {
-  var b = el('button', { className: 'vy-knapp' + (aktiv ? ' aktiv' : '') });
-  b.textContent = text; b.addEventListener('click', onClick); return b;
 }
 
 function visaFel(msg) {
