@@ -312,7 +312,7 @@ var state = {
 var autoSparaTimer = null;
 var statusEl = null;
 
-function schemaläggAutoSpara() {
+function triggerSave() {
   clearTimeout(autoSparaTimer);
   autoSparaTimer = setTimeout(sparaTyst, 1500);
 }
@@ -389,7 +389,7 @@ function renderVyOversikt(app) {
 
     elev.betyg.forEach(function(b, i) {
       var td = el('td');
-      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; schemaläggAutoSpara(); }));
+      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; triggerSave(); }));
       tr.appendChild(td);
     });
 
@@ -398,7 +398,7 @@ function renderVyOversikt(app) {
     internTa.placeholder = '–';
     internTa.value = elev.internKommentar || '';
     internTa.addEventListener('click', function(e) { e.stopPropagation(); });
-    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; schemaläggAutoSpara(); });
+    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; triggerSave(); });
     tdIntern.appendChild(internTa);
     tr.appendChild(tdIntern);
 
@@ -414,7 +414,7 @@ function renderVyOversikt(app) {
         var lbl   = el('div', { className: 'oversikt-kom-label' }); lbl.textContent = 'Prov ' + (i + 1) + ' – ' + u; block.appendChild(lbl);
         var ta    = el('textarea'); ta.rows = 2; ta.placeholder = 'Kommentar…';
         ta.value  = elev.kommentar[i] || '';
-        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; schemaläggAutoSpara(); });
+        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; triggerSave(); });
         block.appendChild(ta);
         grid.appendChild(block);
       });
