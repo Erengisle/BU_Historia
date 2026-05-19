@@ -309,6 +309,32 @@ var state = {
   felmeddelande: '',
 };
 
+var autoSparaTimer = null;
+var statusEl = null;
+
+function schemaläggAutoSpara() {
+  clearTimeout(autoSparaTimer);
+  autoSparaTimer = setTimeout(sparaTyst, 1500);
+}
+
+function sparaTyst() {
+  if (statusEl) { statusEl.textContent = 'Sparar…'; statusEl.className = 'status-text'; }
+  google.script.run
+    .withSuccessHandler(function() {
+      if (statusEl) {
+        statusEl.textContent = '✓ Autosparat';
+        statusEl.className = 'status-text';
+        setTimeout(function() {
+          if (statusEl) statusEl.textContent = state.elever.length + ' elever · ' + state.uppgifter.length + ' uppgifter';
+        }, 2000);
+      }
+    })
+    .withFailureHandler(function(err) {
+      if (statusEl) { statusEl.textContent = 'Fel: ' + err.message; statusEl.className = 'status-text fel'; }
+    })
+    .sparaAllaElever(state.elever);
+}
+
 google.script.run
   .withSuccessHandler(function(data) {
     if (data.fel) { visaFel(data.fel); return; }
@@ -363,7 +389,7 @@ function renderVyOversikt(app) {
 
     elev.betyg.forEach(function(b, i) {
       var td = el('td');
-      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; }));
+      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; schemaläggAutoSpara(); }));
       tr.appendChild(td);
     });
 
@@ -372,7 +398,7 @@ function renderVyOversikt(app) {
     internTa.placeholder = '–';
     internTa.value = elev.internKommentar || '';
     internTa.addEventListener('click', function(e) { e.stopPropagation(); });
-    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
+    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; schemaläggAutoSpara(); });
     tdIntern.appendChild(internTa);
     tr.appendChild(tdIntern);
 
@@ -388,7 +414,7 @@ function renderVyOversikt(app) {
         var lbl   = el('div', { className: 'oversikt-kom-label' }); lbl.textContent = 'Prov ' + (i + 1) + ' – ' + u; block.appendChild(lbl);
         var ta    = el('textarea'); ta.rows = 2; ta.placeholder = 'Kommentar…';
         ta.value  = elev.kommentar[i] || '';
-        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; });
+        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; schemaläggAutoSpara(); });
         block.appendChild(ta);
         grid.appendChild(block);
       });
@@ -439,11 +465,10 @@ function renderSparaRad(app) {
   btn.addEventListener('click', sparaAlla);
   rad.appendChild(btn);
 
-  if (state.felmeddelande) {
-    var ft = el('div', { className: 'status-text fel' }); ft.textContent = state.felmeddelande; rad.appendChild(ft);
-  } else {
-    var st = el('div', { className: 'status-text' }); st.textContent = state.elever.length + ' elever · ' + state.uppgifter.length + ' uppgifter'; rad.appendChild(st);
-  }
+  var st = el('div', { className: 'status-text' + (state.felmeddelande ? ' fel' : '') });
+  st.textContent = state.felmeddelande || (state.elever.length + ' elever · ' + state.uppgifter.length + ' uppgifter');
+  statusEl = st;
+  rad.appendChild(st);
   app.appendChild(rad);
 }
 
