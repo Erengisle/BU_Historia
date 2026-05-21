@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historia – Betygssystem – Bruksanvisning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #F0EDE6;
+      --surface: #ffffff;
+      --ink:     #0F1B2D;
+      --mute:    #556070;
+      --hair:    #DDD8D0;
+      --accent:  #0F1B2D;
+      --gold:    #D4880A;
+      --green:   #1A7A4A;
+      --red:     #B52020;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 0 0 80px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--accent);
+      color: #fff;
+      padding: 56px 40px 48px;
+      margin-bottom: 48px;
+    }
+    .hero-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.6;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: 15px;
+      opacity: 0.8;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .chip {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 40px;
+    }
+    .nav h3 {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mute);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .nav ol {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 24px;
+    }
+    @media (max-width: 540px) { .nav ol { grid-template-columns: 1fr; } }
+    .nav ol li a {
+      font-size: 13px;
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nav ol li a:hover { text-decoration: underline; }
+    .nav ol li::before {
+      content: attr(data-n) ". ";
+      color: var(--mute);
+      font-size: 12px;
+    }
+
+    /* ── Sections ── */
+    section { margin-bottom: 52px; }
+    section h2 {
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--hair);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2 .icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    section h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 24px 0 8px;
+      color: var(--ink);
+    }
+    section p { font-size: 14px; color: var(--ink); margin-bottom: 12px; }
+    section ul, section ol {
+      font-size: 14px;
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    section li { margin-bottom: 5px; }
+    section li::marker { color: var(--gold); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card p { margin-bottom: 0; font-size: 13px; color: var(--mute); }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 13.5px;
+      line-height: 1.6;
+      display: flex;
+      gap: 12px;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+    .callout.tip  { background: #E8F5EE; border-left: 3px solid var(--green); }
+    .callout.warn { background: #FDEAEA; border-left: 3px solid var(--red); }
+    .callout.info { background: #EBF0FA; border-left: 3px solid #2355A0; }
+    .callout.gold { background: #FDF8D0; border-left: 3px solid var(--gold); }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 400px; }
+    th {
+      background: #fafaf6;
+      padding: 10px 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--mute);
+      text-align: left;
+      border-bottom: 1px solid var(--hair);
+    }
+    td {
+      padding: 10px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--hair);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { font-weight: 600; white-space: nowrap; }
+    td code { font-family: monospace; background: #F0EDE6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+    /* ── Steps ── */
+    .steps { list-style: none; padding: 0; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      align-items: flex-start;
+    }
+    .steps li::before {
+      content: counter(step);
+      background: var(--accent);
+      color: #fff;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Flow ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 16px 0;
+      row-gap: 8px;
+    }
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      min-width: 110px;
+    }
+    .flow-arrow { color: var(--mute); font-size: 18px; padding: 0 6px; }
+
+    /* ── File badges ── */
+    .file-badge {
+      display: inline-block;
+      background: #EBF0FA;
+      color: #2355A0;
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    /* ── Grade badges ── */
+    .grade {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-right: 4px;
+    }
+    .grade-A { background: #C8F0D8; color: #1A6B35; }
+    .grade-C { background: #D8EEC8; color: #2A6020; }
+    .grade-E { background: #E8F5DC; color: #3A7030; }
+    .grade-F { background: #FFD0CC; color: #C02010; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--mute);
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--hair);
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-label">Dokumentation · Historia</div>
+    <h1>Betygssystem<br>Bruksanvisning</h1>
+    <p>Ett system för att registrera och följa upp elevresultat i historia, hantera omprovs­anmälningar och skicka personliga resultatmejl – allt via Google Kalkylark och Apps Script.</p>
+    <div class="hero-chips">
+      <span class="chip">Google Kalkylark</span>
+      <span class="chip">Apps Script</span>
+      <span class="chip">Webbapp</span>
+      <span class="chip">Google Kalender</span>
+      <span class="chip">Gmail</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Innehållsförteckning -->
+  <div class="nav">
+    <h3>Innehåll</h3>
+    <ol>
+      <li data-n="1"><a href="#oversikt">Vad systemet gör</a></li>
+      <li data-n="2"><a href="#flode">Flödet steg för steg</a></li>
+      <li data-n="3"><a href="#filer">Projektets filer</a></li>
+      <li data-n="4"><a href="#betygspanel">Betygspanelen – lärarvyn</a></li>
+      <li data-n="5"><a href="#omprov">Omprovs­formuläret – elevsidan</a></li>
+      <li data-n="6"><a href="#resultat">Elevens resultatsida</a></li>
+      <li data-n="7"><a href="#setup">Sätta upp systemet</a></li>
+      <li data-n="8"><a href="#daglig">Daglig användning</a></li>
+      <li data-n="9"><a href="#regler">Viktiga regler</a></li>
+      <li data-n="10"><a href="#felsok">Felsökning</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. Vad systemet gör -->
+  <section id="oversikt">
+    <h2><span class="icon">📋</span> Vad systemet gör</h2>
+    <p>Systemet hjälper dig att hålla koll på elevernas betyg i fem delmoment i historia, hantera omprovs­anmälningar och kommunicera resultaten till eleverna på ett snyggt och strukturerat sätt.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0;">
+      <div class="card">
+        <div class="card-title">📊 Betygspanel</div>
+        <p>Registrera betyg och kommentarer för alla elever i en överskådlig tabell direkt i webbläsaren.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Omprovs­anmälan</div>
+        <p>Elever anmäler sig via ett formulär. Du och eleven får bekräftelse via mejl och kalenderinbjudan skapas automatiskt.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📧 Resultatmejl</div>
+        <p>Skicka personliga resultatmejl med betyg, kommentarer och länk till en snygg resultatsida.</p>
+      </div>
+    </div>
+
+    <h3>Kursen i korthet</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Prov</th><th>Möjliga betyg</th><th>Krav för godkänt kurs</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>5 delmoment</td>
+            <td>
+              <span class="grade grade-A">A</span>
+              <span class="grade grade-C">C</span>
+              <span class="grade grade-E">E</span>
+              <span class="grade grade-F">F</span>
+              <span style="font-weight:400;color:#96A3B0;font-size:13px;">– (saknas)</span>
+            </td>
+            <td>Minst 3 av 5 godkända (E, C eller A)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Proven</h3>
+    <ul>
+      <li>Första världskriget</li>
+      <li>Mellankrigstiden</li>
+      <li>Andra världskriget</li>
+      <li>Europa efter världskrigen</li>
+      <li>Världen efter världskrigen</li>
+    </ul>
+
+    <div class="callout gold">
+      <span class="callout-icon">📅</span>
+      <span>Omprov genomförs alltid <strong>onsdagar kl. 14:45–16:15</strong>. Blockveckor (ej tillgängliga): v. 1, 2, 9, 15 samt v. 23–38 (sommar).</span>
+    </div>
+  </section>
+
+  <!-- 2. Flödet -->
+  <section id="flode">
+    <h2><span class="icon">🔄</span> Flödet steg för steg</h2>
+
+    <h3>Betygsregistrering</h3>
+    <div class="flow">
+      <div class="flow-step">Öppna<br>Betygspanel</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Ändra betyg<br>/ kommentar</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Klicka<br>"Spara till Sheet"</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Data sparas<br>i kalkylarket</div>
+    </div>
+
+    <h3>Omprovs­anmälan</h3>
+    <div class="flow">
+      <div class="flow-step">Elev fyller<br>i formulär</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Bekräftelse­mejl<br>till elev + lärare</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Kalender­inbjudan<br>skapas automatiskt</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Rad läggs<br>till i Sheet</div>
+    </div>
+
+    <h3>Resultatmejl</h3>
+    <div class="flow">
+      <div class="flow-step">Klicka<br>"Skicka resultatmejl"<br>i panelen</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">HTML-mejl<br>skickas till elev</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Elev klickar<br>länk i mejlet</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Personlig<br>resultatsida visas</div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <span>Kalenderinbjudan och bekräftelsemejlet vid omprovs­anmälan sköts helt automatiskt – du behöver inte göra något efter att formuläret är ifyllt.</span>
+    </div>
+  </section>
+
+  <!-- 3. Filer -->
+  <section id="filer">
+    <h2><span class="icon">⚙️</span> Projektets filer</h2>
+    <p>Projektet består av fyra kodfiler i Google Apps Script och två HTML-filer. Alla finns i GitHub-repot <code>erengisle/BU_Historia</code>.</p>
+
+    <div class="card">
+      <div class="card-title"><span class="file-badge">Code.gs</span> Huvudscript</div>
+      <p>Hanterar allt: menyn i kalkylarket, betygspanelens backend (hämta/spara data), omprovs­registrering, mejlutskick och kalender­integration. Webbappens <code>doGet()</code>-funktion finns här.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">buildHtmlEmail.gs</span> Mejl och resultatsida</div>
+      <p>Bygger HTML för resultatmejlet och elevens personliga resultatsida. Innehåller trafikljus­logiken (räknare, varningsnivåer) och stilsättningen för båda vyerna.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">skapaEllerUppdateraElevdokument_v2.gs</span> Elevdokument</div>
+      <p>Skapar eller uppdaterar individuella Google Kalkylark för varje elev baserat på betygsdata i "Samlade resultat"-fliken. Används separat vid behov.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">form.html</span> Omprovs­formulär</div>
+      <p>Elevens anmälningssida för omprov. Validerar att datum är en onsdag och inte en blockvecka. Driftsatt som webbapp på <code>/exec</code>-URL.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="file-badge">sidebar.html</span> Betygspanel</div>
+      <p>Lärarens betygspanel. Visar alla elever i en tabell med betygsval och intern­kommentar. Klicka på ett namn för att expandera och se / redigera kommentarer per prov. Nås som Sheets-sidebar eller via <code>/exec?view=larare</code>.</p>
+    </div>
+  </section>
+
+  <!-- 4. Betygspanelen -->
+  <section id="betygspanel">
+    <h2><span class="icon">📊</span> Betygspanelen – lärarvyn</h2>
+    <p>Betygspanelen är ditt primära verktyg för att registrera och följa upp betyg. Den finns i två varianter:</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+      <div class="card">
+        <div class="card-title">📌 Sheets-sidebar</div>
+        <p>Öppnas via menyn <strong>Historia → Öppna betygspanel (sidebar)</strong> direkt i Google Kalkylark. Uppdateras direkt när du sparar om filen i Apps Script – ingen ny driftsättning behövs.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🌐 Webbläsare</div>
+        <p>URL:en slutar med <code>/exec?view=larare</code>. Fungerar i mobilen. Kräver ny driftsättning vid kodfils­ändringar. Öppna via <strong>Historia → Öppna betygspanel i webbläsaren</strong>.</p>
+      </div>
+    </div>
+
+    <h3>Hur du använder panelen</h3>
+    <ol class="steps">
+      <li>Välj betyg i rullgardins­menyn för varje elev och prov (–, F, E, C, A). Färgerna uppdateras direkt.</li>
+      <li>Klicka på ett elevnamn (▸) för att expandera och se kommentarsfälten per prov. Klicka igen (▾) för att dölja.</li>
+      <li>Fyll i intern kommentar i det gula fältet till höger – visas bara för dig, aldrig för eleven.</li>
+      <li>Klicka <strong>Spara till Sheet</strong> längst ner när du är klar. Glöm inte detta steg!</li>
+      <li>För att skicka resultatmejl till en enskild elev: expandera eleven och klicka <strong>📧 Skicka resultatmejl</strong>.</li>
+    </ol>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <span>Data sparas <strong>inte automatiskt</strong>. Stänger du panelen utan att klicka "Spara till Sheet" försvinner osparade ändringar.</span>
+    </div>
+
+    <h3>Skicka mejl till alla elever på en gång</h3>
+    <p>Gå till menyn <strong>Historia → Skicka resultatmejl till alla</strong>. Mejl skickas till alla elever som har en e-postadress inlagd i kolumn O.</p>
+  </section>
+
+  <!-- 5. Omprov -->
+  <section id="omprov">
+    <h2><span class="icon">📅</span> Omprovs­formuläret – elevsidan</h2>
+    <p>Elever anmäler sig till omprov via en webbsida (formuläret). Länken delas med eleverna – t.ex. via QR-kod, Google Classroom eller direkt.</p>
+
+    <h3>Vad eleven fyller i</h3>
+    <ul>
+      <li><strong>E-postadress</strong> – skol-e-post (format: <code>fornamn.efternamn@edu.huddinge.se</code>)</li>
+      <li><strong>Vilket prov</strong> – väljer ur listan med de fem proven</li>
+      <li><strong>Datum</strong> – väljer en onsdag; ogiltiga datum (ej onsdag, blockvecka) korrigeras automatiskt</li>
+    </ul>
+
+    <h3>Vad som händer automatiskt</h3>
+    <ul>
+      <li>En rad läggs till i fliken <strong>Omprov Historia</strong> i kalkylarket</li>
+      <li>Bekräftelsemejl skickas till eleven och till dig</li>
+      <li>En kalenderinbjudan skapas i din Google Kalender med eleven som gäst</li>
+    </ul>
+
+    <h3>QR-kod till formuläret</h3>
+    <p>Gå till <strong>Historia → Skapa QR-kod (omprov)</strong>. En bild skapas i fliken "QR-kod" i kalkylarket. Skriv ut och sätt upp i klassrummet.</p>
+
+    <div class="callout gold">
+      <span class="callout-icon">📅</span>
+      <span>Formuläret tillåter bara onsdagar som inte är blockveckor. Väljer eleven ett ogiltigt datum hoppar formuläret automatiskt till nästa giltiga onsdag.</span>
+    </div>
+  </section>
+
+  <!-- 6. Resultatsida -->
+  <section id="resultat">
+    <h2><span class="icon">🎓</span> Elevens resultatsida</h2>
+    <p>Varje elev har en personlig resultatsida som nås via en unik länk (token). Länken skickas automatiskt i resultatmejlet.</p>
+
+    <h3>Vad sidan visar</h3>
+    <ul>
+      <li>Trafikljus­räknare: <strong>X/5 godkända</strong> med färgkodning (grön/gul/röd)</li>
+      <li>Betyg och kommentar för varje prov</li>
+      <li>Varningsruta med studietips om eleven riskerar att inte klara kursen</li>
+      <li>Knapp för att anmäla sig till omprov</li>
+    </ul>
+
+    <h3>Varnings­nivåer</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nivå</th><th>Villkor</th><th>Åtgärd i mejlet</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Ingen varning</td>
+            <td>Klarar minst ett av de två första proven</td>
+            <td>Ingen varningsruta</td>
+          </tr>
+          <tr>
+            <td>Varning 1</td>
+            <td>Missar de två första proven, men totalt under 3 missade</td>
+            <td>Uppmuntran + studietips + länk till omprovs­anmälan</td>
+          </tr>
+          <tr>
+            <td>Varning 2</td>
+            <td>Missar de två första proven, totalt 2 missade</td>
+            <td>"Dags att agera" + studietips + länk till omprovs­anmälan</td>
+          </tr>
+          <tr>
+            <td>Varning 3</td>
+            <td>Missar de två första proven, totalt 3+ missade</td>
+            <td>Rött larm – "kontakta läraren direkt" + e-postlänk till dig</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Länkarna i gamla mejl slutar fungera om du skapar en <em>ny</em> driftsättning (ny URL). Använd alltid "Ny version" i befintlig driftsättning för att URL:en ska förbli densamma.</span>
+    </div>
+  </section>
+
+  <!-- 7. Setup -->
+  <section id="setup">
+    <h2><span class="icon">🚀</span> Sätta upp systemet</h2>
+    <p>Systemet är redan uppsatt. Det här avsnittet beskriver vad som gjordes – och vad du behöver göra vid ett eventuellt nytt läsår.</p>
+
+    <h3>Kalkylarkstruktur</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Flik</th><th>Innehåll</th><th>Redigeras av</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Resultat</td>
+            <td>En rad per elev: namn, betyg×5, kommentarer×5, e-post, intern kommentar, token</td>
+            <td>Betygspanelen (Spara-knapp)</td>
+          </tr>
+          <tr>
+            <td>Omprov Historia</td>
+            <td>En rad per omprovs­anmälan: tidsstämpel, e-post, datum, prov, veckonummer</td>
+            <td>Automatiskt vid inlämning</td>
+          </tr>
+          <tr>
+            <td>Samlade resultat</td>
+            <td>Sammanfattning från externa betygsdokument</td>
+            <td><code>skapaEllerUppdateraElevdokument_v2.gs</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Viktiga konstanter i Code.gs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Konstant</th><th>Värde / Syfte</th></tr></thead>
+        <tbody>
+          <tr><td><code>SHEET_NAME</code></td><td>Namn på omprovs­fliken ("Omprov Historia")</td></tr>
+          <tr><td><code>RESULTAT_SHEET</code></td><td>Namn på betygsdatafliken ("Resultat")</td></tr>
+          <tr><td><code>TEACHER_EMAIL</code></td><td>Din e-postadress för bekräftelsemejl</td></tr>
+          <tr><td><code>CALENDAR_ID</code></td><td>"primary" = din primära Google Kalender</td></tr>
+          <tr><td><code>EXTERN_SHEET_ID</code></td><td>ID för externt klasslistedokument</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Driftsätta webbappen (vid kodändringar)</h3>
+    <ol class="steps">
+      <li>I Apps Script: klicka <strong>Distribuera → Hantera distributioner</strong>.</li>
+      <li>Klicka pennikonen ✏️ bredvid din befintliga distribution.</li>
+      <li>Under "Version" – välj <strong>Ny version</strong>.</li>
+      <li>Klicka <strong>Distribuera</strong>. URL:en förblir oförändrad.</li>
+    </ol>
+
+    <h3>Spara webbapp-URL (efter ny driftsättning)</h3>
+    <p>Om du av misstag skapar en helt ny distribution (ny URL): kör <strong>Historia → Spara webbapp-URL</strong> och klistra in den nya URL:en. Framtida mejl använder då rätt länk.</p>
+
+    <h3>Importera elever</h3>
+    <ol class="steps">
+      <li>Se till att det externa klassliste­dokumentet är uppdaterat med namn och e-post.</li>
+      <li>Kör <strong>Historia → Importera elever från klasslista</strong>.</li>
+      <li>Kör <strong>Historia → Uppdatera e-postadresser</strong> om e-post saknas för några elever.</li>
+    </ol>
+  </section>
+
+  <!-- 8. Daglig användning -->
+  <section id="daglig">
+    <h2><span class="icon">📆</span> Daglig användning</h2>
+
+    <h3>Efter ett prov</h3>
+    <ol class="steps">
+      <li>Öppna betygspanelen (sidebar eller webbläsare).</li>
+      <li>Sätt betyg för varje elev på det aktuella provet.</li>
+      <li>Lägg eventuellt till kommentarer (expandera elevnamnet).</li>
+      <li>Klicka <strong>Spara till Sheet</strong>.</li>
+      <li>Valfritt: skicka resultatmejl via panelen eller via menyn.</li>
+    </ol>
+
+    <h3>Hantera omprovs­anmälningar</h3>
+    <p>Anmälningarna samlas automatiskt i fliken <strong>Omprov Historia</strong> i kalkylarket, och du ser dem också i din Google Kalender. Du behöver inte göra något – men du kan öppna kalkylarket för att se vilka elever som anmält sig och till vilket prov.</p>
+
+    <h3>Kopiera betyg från Samlade resultat</h3>
+    <p>Om du uppdaterar betygen i de individuella elevdokumenten: kör <strong>Historia → Kopiera betyg från Samlade resultat</strong> för att föra över dem till huvud­databasen.</p>
+  </section>
+
+  <!-- 9. Viktiga regler -->
+  <section id="regler">
+    <h2><span class="icon">📌</span> Viktiga regler att komma ihåg</h2>
+
+    <h3>Sidebar vs webbapp – olika regler för uppdatering</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Variant</th><th>Nås via</th><th>Kräver ny driftsättning?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Sheets-sidebar</td>
+            <td>Historia-menyn i kalkylarket</td>
+            <td>Nej – läser <code>sidebar.html</code> direkt. Spara filen i editorn = klart.</td>
+          </tr>
+          <tr>
+            <td>Webbapp (<code>/exec?view=larare</code>)</td>
+            <td>Webbläsare / mobil</td>
+            <td>Ja – alla ändringar i .gs-filer och .html-filer kräver ny driftsättning.</td>
+          </tr>
+          <tr>
+            <td>Elevformulär (<code>/exec</code>)</td>
+            <td>Delad länk / QR-kod</td>
+            <td>Ja – kräver ny driftsättning vid ändringar.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Skapa aldrig en ny distribution i onödan</h3>
+    <p>En ny distribution ger en ny URL. Gamla resultat­mejl-länkar (token-länkar) slutar då fungera eftersom de pekar på den gamla URL:en. Använd alltid <strong>Ny version</strong> i befintlig distribution.</p>
+
+    <h3>Spara alltid i betygspanelen</h3>
+    <p>Data sparas inte automatiskt. Klicka alltid <strong>Spara till Sheet</strong> efter att du gjort ändringar.</p>
+
+    <h3>Rör inte token-kolumnen manuellt</h3>
+    <p>Kolumn Q ("Token") i Resultat-fliken fylls i automatiskt första gången ett resultatmejl skickas. Om du ändrar eller raderar en token fungerar inte elevens länk till resultatsidan längre.</p>
+  </section>
+
+  <!-- 10. Felsökning -->
+  <section id="felsok">
+    <h2><span class="icon">🔧</span> Felsökning</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Problem</th><th>Trolig orsak</th><th>Lösning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Elevens länk ger felsida ("avvisade anslutningen")</td>
+            <td>URL i Script Properties är fel, eller en ny distribution skapades (ny URL)</td>
+            <td>Kör <strong>Historia → Spara webbapp-URL</strong> och klistra in rätt <code>/exec</code>-URL. Kontrollera att URL:en slutar med <code>/exec</code>, inte <code>/dev</code>.</td>
+          </tr>
+          <tr>
+            <td>Betygspanelen visar gammal kod</td>
+            <td>Webbapp-versionen kräver ny driftsättning efter kodändringar</td>
+            <td>Distribuera → Hantera distributioner → ✏️ → Ny version → Distribuera</td>
+          </tr>
+          <tr>
+            <td>Sidebaren visar gammal kod</td>
+            <td>Sidan var redan öppen när filen uppdaterades</td>
+            <td>Stäng sidebaren (krysset) och öppna den igen via Historia-menyn</td>
+          </tr>
+          <tr>
+            <td>Inga bekräftelsemejl skickas vid omprovs­anmälan</td>
+            <td>Formuläret är inte kopplat till rätt webbapp, eller behörigheter saknas</td>
+            <td>Kontrollera att TEACHER_EMAIL är korrekt i Code.gs och att webbappen är driftsatt med "Kör som: Mig"</td>
+          </tr>
+          <tr>
+            <td>Kalenderinbjudan skapas inte</td>
+            <td>CalendarApp saknar behörighet eller CALENDAR_ID är fel</td>
+            <td>Kör ett test-anrop i Apps Script och godkänn behörigheterna. Kontrollera CALENDAR_ID.</td>
+          </tr>
+          <tr>
+            <td>Elever saknas i betygspanelen</td>
+            <td>Elever är inte importerade till Resultat-fliken</td>
+            <td>Kör Historia → Importera elever från klasslista</td>
+          </tr>
+          <tr>
+            <td>E-postadresser saknas (kolumn O)</td>
+            <td>Importerades utan e-post</td>
+            <td>Kör Historia → Uppdatera e-postadresser</td>
+          </tr>
+          <tr>
+            <td>Formuläret är inte mobilanpassat (sidan är liten)</td>
+            <td>Apps Script strippar viewport-metataggar; den JS-baserade lösningen kan vara fördröjd</td>
+            <td>Verifiera att <code>form.html</code> innehåller <code>document.write('&lt;meta name="viewport"…'&gt;)</code> längst upp i &lt;head&gt;. Skapa ny driftsättning.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <span>Alla scriptfiler finns i GitHub-repot <strong>erengisle/BU_Historia</strong>, branch <code>main</code>. Vid större problem: jämför koden i Apps Script med den i repot.</span>
+    </div>
+  </section>
+
+  <div class="footer">
+    Historia · Betygssystem · Bruksanvisning · github.com/erengisle/BU_Historia
+  </div>
+
+</div>
+</body>
+</html>
