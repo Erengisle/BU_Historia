@@ -232,6 +232,8 @@
     .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
     .oversikt-tabell tbody tr:hover td.namn-cell { background: #F0EDE6; }
     .oversikt-tabell tbody tr:hover td.intern-cell { background: #FFFBF0; }
+    .fokus-aktiv tr { transition: opacity 0.22s, filter 0.22s; }
+    .fokus-aktiv tr:not(.fokus-elev) { opacity: 0.08; filter: blur(3px); pointer-events: none; user-select: none; }
     .oversikt-kom-rad td {
       background: #FFFBF0;
       padding: 8px 10px;
@@ -347,12 +349,14 @@ function renderVyOversikt(app) {
   tbl.appendChild(thead);
 
   var tbody = el('tbody');
+  if (state.expanderadElev !== null) tbody.className = 'fokus-aktiv';
   var kolAntal = state.uppgifter.length + 2;
 
   state.elever.forEach(function(elev, idx) {
     var expanderad = state.expanderadElev === idx;
 
-    var tr  = el('tr');
+    var tr = el('tr');
+    if (expanderad) tr.className = 'fokus-elev';
     var td0 = el('td', { className: 'namn-cell' });
     td0.textContent = (expanderad ? '▾ ' : '▸ ') + elev.namn;
     td0.addEventListener('click', function() {
@@ -379,7 +383,7 @@ function renderVyOversikt(app) {
     tbody.appendChild(tr);
 
     if (expanderad) {
-      var komTr = el('tr', { className: 'oversikt-kom-rad' });
+      var komTr = el('tr', { className: 'oversikt-kom-rad fokus-elev' });
       var komTd = el('td'); komTd.colSpan = kolAntal;
       var grid  = el('div', { className: 'oversikt-kom-grid' });
 
