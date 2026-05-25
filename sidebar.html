@@ -323,9 +323,6 @@ google.script.run
   .hamtaElevdata();
 
 function render() {
-  var oldWrap = document.querySelector('.oversikt-wrap');
-  var savedScroll = oldWrap ? oldWrap.scrollTop : 0;
-
   var app = document.getElementById('app');
   app.innerHTML = '';
   app.style.display = 'flex';
@@ -336,8 +333,10 @@ function render() {
   renderVyOversikt(app);
   renderSparaRad(app);
 
-  var newWrap = document.querySelector('.oversikt-wrap');
-  if (newWrap) newWrap.scrollTop = savedScroll;
+  if (state.expanderadElev !== null) {
+    var fokusRad = document.querySelector('.fokus-elev');
+    if (fokusRad) fokusRad.scrollIntoView({ block: 'center' });
+  }
 }
 
 function renderVyOversikt(app) {
