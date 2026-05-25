@@ -309,6 +309,7 @@ var state = {
   sparar: false,
   sparatOk: false,
   felmeddelande: '',
+  skickatMejl: {},
 };
 
 google.script.run
@@ -322,6 +323,9 @@ google.script.run
   .hamtaElevdata();
 
 function render() {
+  var oldWrap = document.querySelector('.oversikt-wrap');
+  var savedScroll = oldWrap ? oldWrap.scrollTop : 0;
+
   var app = document.getElementById('app');
   app.innerHTML = '';
   app.style.display = 'flex';
@@ -330,8 +334,10 @@ function render() {
   app.style.overflow = 'hidden';
 
   renderVyOversikt(app);
-
   renderSparaRad(app);
+
+  var newWrap = document.querySelector('.oversikt-wrap');
+  if (newWrap) newWrap.scrollTop = savedScroll;
 }
 
 function renderVyOversikt(app) {
@@ -367,7 +373,7 @@ function renderVyOversikt(app) {
 
     elev.betyg.forEach(function(b, i) {
       var td = el('td');
-      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; }));
+      td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; delete state.skickatMejl[idx]; }));
       tr.appendChild(td);
     });
 
@@ -376,7 +382,7 @@ function renderVyOversikt(app) {
     internTa.placeholder = '–';
     internTa.value = elev.internKommentar || '';
     internTa.addEventListener('click', function(e) { e.stopPropagation(); });
-    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; });
+    internTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; delete state.skickatMejl[idx]; });
     tdIntern.appendChild(internTa);
     tr.appendChild(tdIntern);
 
@@ -392,28 +398,29 @@ function renderVyOversikt(app) {
         var lbl   = el('div', { className: 'oversikt-kom-label' }); lbl.textContent = 'Prov ' + (i + 1) + ' – ' + u; block.appendChild(lbl);
         var ta    = el('textarea'); ta.rows = 2; ta.placeholder = 'Kommentar…';
         ta.value  = elev.kommentar[i] || '';
-        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; });
+        ta.addEventListener('input', function() { state.elever[idx].kommentar[i] = this.value; delete state.skickatMejl[idx]; });
         block.appendChild(ta);
         grid.appendChild(block);
       });
 
-      var mailBtn = el('button', { className: 'mail-knapp' });
-      mailBtn.textContent = '📧 Skicka resultatmejl';
-      (function(e, btn) {
+      var harSkickat = !!state.skickatMejl[idx];
+      var mailBtn = el('button', { className: 'mail-knapp' + (harSkickat ? ' skickat' : '') });
+      mailBtn.textContent = harSkickat ? '✓ Resultatmejl skickat' : '📧 Skicka resultatmejl';
+      (function(e, btn, elevIdx) {
         btn.addEventListener('click', function(ev) {
           ev.stopPropagation();
           btn.disabled = true; btn.textContent = 'Skickar…'; btn.className = 'mail-knapp';
           google.script.run
             .withSuccessHandler(function(namn) {
-              btn.textContent = '✓ Skickat till ' + namn; btn.className = 'mail-knapp skickat';
-              setTimeout(function() { btn.textContent = '📧 Skicka resultatmejl'; btn.className = 'mail-knapp'; btn.disabled = false; }, 3000);
+              state.skickatMejl[elevIdx] = true;
+              render();
             })
             .withFailureHandler(function(err) {
               btn.textContent = '⚠ ' + err.message; btn.className = 'mail-knapp fel'; btn.disabled = false;
             })
             .skickaMailTillElev(e.radIndex);
         });
-      })(elev, mailBtn);
+      })(elev, mailBtn, idx);
       var mailBlock = el('div', { className: 'oversikt-kom-block' });
       mailBlock.style.gridColumn = '1 / -1';
       mailBlock.appendChild(mailBtn);
@@ -494,6 +501,13 @@ function betygSelect(value, onChange) {
 function visaFel(msg) {
   document.getElementById('app').innerHTML = '<div style="padding:20px;color:#B52020;font-size:13px;">⚠ ' + msg + '</div>';
 }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && state.expanderadElev !== null) {
+    state.expanderadElev = null;
+    render();
+  }
+});
 </script>
 </body>
 </html>
