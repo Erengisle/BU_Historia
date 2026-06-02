@@ -470,7 +470,8 @@ function doGet(e) {
   if (params.view === 'larare') return serveLararsida();
 
   return HtmlService.createHtmlOutputFromFile('form.html')
-    .setTitle('Anmälan till omprov – Historia');
+    .setTitle('Anmälan till omprov – Historia')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 // Elevens personliga resultatsida (via token)
@@ -488,6 +489,7 @@ function serveResultatSida(token) {
         }
         return HtmlService.createHtmlOutput(buildResultatSida(row[0], betyg, kommentar))
           .setTitle('Dina resultat – Historia')
+          .addMetaTag('viewport', 'width=device-width, initial-scale=1')
           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
       }
     }
@@ -502,6 +504,7 @@ function serveResultatSida(token) {
 function serveLararsida() {
   return HtmlService.createHtmlOutputFromFile('sidebar')
     .setTitle('Betygspanel – Historia')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
