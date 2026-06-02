@@ -232,6 +232,7 @@
     .oversikt-tabell tbody tr:hover td { background: #F0EDE6; }
     .oversikt-tabell tbody tr:hover td.namn-cell { background: #F0EDE6; }
     .oversikt-tabell tbody tr:hover td.intern-cell { background: #FFFBF0; }
+    .mobil-intern { display: none; }
     .fokus-aktiv tr { transition: opacity 0.22s, filter 0.22s; }
     .fokus-aktiv tr:not(.fokus-elev) { opacity: 0.08; filter: blur(3px); pointer-events: none; user-select: none; }
     .oversikt-kom-rad td {
@@ -280,11 +281,13 @@
 
     @media (max-width: 600px) {
       .oversikt-tabell { width: 100%; min-width: unset; table-layout: auto; }
-      .oversikt-tabell th.intern-kol { width: 120px; }
-      .oversikt-tabell th, .oversikt-tabell td { font-size: 11px; padding: 3px 2px; }
-      .oversikt-tabell th.namn-kol { width: 100px; }
-      .oversikt-tabell .betyg-select { width: 36px; font-size: 11px; }
-      .intern-cell textarea { height: 36px; font-size: 10px; }
+      .oversikt-tabell th.intern-kol,
+      .oversikt-tabell td.intern-cell { display: none; }
+      .oversikt-tabell th.namn-kol { width: 130px; }
+      .oversikt-tabell th, .oversikt-tabell td { font-size: 12px; padding: 4px 2px; }
+      .oversikt-tabell .betyg-select { width: 38px; height: 32px; font-size: 12px; }
+      .oversikt-kom-grid { grid-template-columns: 1fr; }
+      .mobil-intern { display: block !important; }
       .spara-knapp { font-size: 14px; padding: 12px; }
       .header-title { font-size: 14px; }
     }
@@ -401,6 +404,14 @@ function renderVyOversikt(app) {
         block.appendChild(ta);
         grid.appendChild(block);
       });
+
+      var internMobilBlock = el('div', { className: 'oversikt-kom-block mobil-intern' });
+      var internMobilLbl = el('div', { className: 'oversikt-kom-label' }); internMobilLbl.textContent = '🔒 Intern kommentar'; internMobilBlock.appendChild(internMobilLbl);
+      var internMobilTa = el('textarea'); internMobilTa.rows = 2; internMobilTa.placeholder = '–';
+      internMobilTa.value = elev.internKommentar || '';
+      internMobilTa.addEventListener('input', function() { state.elever[idx].internKommentar = this.value; delete state.skickatMejl[idx]; });
+      internMobilBlock.appendChild(internMobilTa);
+      grid.appendChild(internMobilBlock);
 
       var harSkickat = !!state.skickatMejl[idx];
       var mailBtn = el('button', { className: 'mail-knapp' + (harSkickat ? ' skickat' : '') });
