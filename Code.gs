@@ -379,7 +379,7 @@ function skickaMailTillElev(radIndex) {
   if (!sheet) throw new Error('Sheet saknas: ' + RESULTAT_SHEET);
 
   var data  = sheet.getDataRange().getValues();
-  var row   = data[radIndex + 1];
+  var row   = data[radIndex];
   var namn  = row[0];
   var epost = row[EPOST_KOL - 1];
   var token = row[TOKEN_KOL - 1];
@@ -391,7 +391,7 @@ function skickaMailTillElev(radIndex) {
 
   if (!token) {
     token = genereraToken();
-    sheet.getRange(radIndex + 2, TOKEN_KOL).setValue(token);
+    sheet.getRange(radIndex + 1, TOKEN_KOL).setValue(token);
   }
 
   var betyg     = [];
