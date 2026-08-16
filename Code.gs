@@ -49,6 +49,19 @@ const UPPGIFTER = [
   'Världen efter världskrigen',
 ];
 
+// Quiz – ett kortare instegsprov per historieområde. Ligger i en egen
+// flik ("Quiz") och matchas mot "Resultat" via elevnamn. Namnen nedan
+// kan bytas ut senare utan att kolumnordningen i fliken påverkas.
+const QUIZ_SHEET = 'Quiz';
+const QUIZOMRADEN = [
+  'Quiz 1',
+  'Quiz 2',
+  'Quiz 3',
+  'Quiz 4',
+  'Quiz 5',
+  'Quiz 6',
+];
+
 // ---------- MENY & SIDOPANEL ----------
 function onOpen() {
   SpreadsheetApp.getUi()
@@ -302,6 +315,50 @@ function kopieraFranSamladeResultat() {
   SpreadsheetApp.getUi().alert(msg);
 }
 
+// ---------- QUIZ-RESULTAT ----------
+// Hämtar (eller skapar) Quiz-fliken och en uppslagskarta namn → rad.
+function hamtaQuizData_() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(QUIZ_SHEET);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(QUIZ_SHEET);
+    sheet.appendRow(['Namn'].concat(QUIZOMRADEN));
+    sheet.setFrozenRows(1);
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var map  = {};
+  for (var i = 1; i < data.length; i++) {
+    var namn = String(data[i][0] || '').trim();
+    if (namn) map[namn.toLowerCase()] = { radIndex: i, varden: data[i].slice(1) };
+  }
+  return { sheet: sheet, map: map };
+}
+
+// Läser ut quizvärden för en elev (utfyllda till QUIZOMRADEN.length).
+function quizVardenForNamn_(map, namn) {
+  var rad    = map[String(namn || '').trim().toLowerCase()];
+  var varden = rad ? rad.varden : [];
+  var resultat = [];
+  for (var i = 0; i < QUIZOMRADEN.length; i++) resultat.push(varden[i] || '');
+  return resultat;
+}
+
+// Sparar quizvärden för en elev — uppdaterar befintlig rad eller lägger till en ny.
+function sparaQuizRad_(sheet, map, namn, varden) {
+  var nyckel = String(namn || '').trim().toLowerCase();
+  if (!nyckel) return;
+  var rad = map[nyckel];
+  if (rad) {
+    sheet.getRange(rad.radIndex + 1, 2, 1, varden.length).setValues([varden]);
+    rad.varden = varden;
+  } else {
+    sheet.appendRow([namn].concat(varden));
+    map[nyckel] = { radIndex: sheet.getLastRow() - 1, varden: varden };
+  }
+}
+
 // ---------- BACKEND: HÄMTA ELEVDATA ----------
 function hamtaElevdata() {
   try {
@@ -322,8 +379,9 @@ function hamtaElevdata() {
       sheet.setFrozenRows(1);
     }
 
-    var data   = sheet.getDataRange().getValues();
-    var elever = [];
+    var data     = sheet.getDataRange().getValues();
+    var elever   = [];
+    var quizMap  = hamtaQuizData_().map;
 
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
@@ -343,10 +401,11 @@ function hamtaElevdata() {
         betyg:           betyg,
         kommentar:       kommentar,
         internKommentar: row[INTERN_KOM_KOL - 1] || '',
+        quiz:            quizVardenForNamn_(quizMap, row[0]),
       });
     }
 
-    return { elever: elever, uppgifter: UPPGIFTER };
+    return { elever: elever, uppgifter: UPPGIFTER, quizomraden: QUIZOMRADEN };
 
   } catch (err) {
     return { fel: err.message };
@@ -359,6 +418,10 @@ function sparaAllaElever(elever) {
   var sheet = ss.getSheetByName(RESULTAT_SHEET);
   if (!sheet) throw new Error('Sheet saknas: ' + RESULTAT_SHEET);
 
+  var quizData  = hamtaQuizData_();
+  var quizSheet = quizData.sheet;
+  var quizMap   = quizData.map;
+
   elever.forEach(function(elev) {
     var rowNum = elev.radIndex + 1;
 
@@ -369,6 +432,12 @@ function sparaAllaElever(elever) {
     }
     sheet.getRange(rowNum, 3, 1, gradeData.length).setValues([gradeData]);
     sheet.getRange(rowNum, INTERN_KOM_KOL).setValue(elev.internKommentar || '');
+
+    var quizVarden = [];
+    for (var k = 0; k < QUIZOMRADEN.length; k++) {
+      quizVarden.push((elev.quiz && elev.quiz[k]) || '');
+    }
+    sparaQuizRad_(quizSheet, quizMap, elev.namn, quizVarden);
   });
 }
 
@@ -400,9 +469,10 @@ function skickaMailTillElev(radIndex) {
     betyg.push(row[2 + j * 2] || '–');
     kommentar.push(row[3 + j * 2] || '');
   }
+  var quiz = quizVardenForNamn_(hamtaQuizData_().map, namn);
 
   var resultUrl = token ? getOmprovUrl() + '?t=' + token : null;
-  var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl);
+  var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl, quiz);
   MailApp.sendEmail({ to: epost, subject: 'Dina resultat i Historia', htmlBody: html });
 
   return namn;
@@ -421,6 +491,7 @@ function skickaResultatmail() {
   var skickade = 0;
   var hoppade  = 0;
   var fel      = [];
+  var quizMap  = hamtaQuizData_().map;
 
   for (var i = 1; i < data.length; i++) {
     var row   = data[i];
@@ -441,10 +512,11 @@ function skickaResultatmail() {
       betyg.push(row[2 + j * 2] || '–');
       kommentar.push(row[3 + j * 2] || '');
     }
+    var quiz = quizVardenForNamn_(quizMap, namn);
 
     try {
       var resultUrl = token ? getOmprovUrl() + '?t=' + token : null;
-      var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl);
+      var html = buildHtmlEmail(namn, betyg, kommentar, resultUrl, quiz);
       MailApp.sendEmail({ to: epost, subject: 'Dina resultat i Historia', htmlBody: html });
       skickade++;
     } catch (err) {
@@ -487,7 +559,8 @@ function serveResultatSida(token) {
           betyg.push(row[2 + j * 2] || '–');
           kommentar.push(row[3 + j * 2] || '');
         }
-        return HtmlService.createHtmlOutput(buildResultatSida(row[0], betyg, kommentar))
+        var quiz = quizVardenForNamn_(hamtaQuizData_().map, row[0]);
+        return HtmlService.createHtmlOutput(buildResultatSida(row[0], betyg, kommentar, quiz))
           .setTitle('Dina resultat – Historia')
           .addMetaTag('viewport', 'width=device-width, initial-scale=1')
           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);

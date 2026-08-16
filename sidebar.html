@@ -94,6 +94,48 @@
     .grade-F  { background: #FFD0CC; color: #C02010; }
     .grade-da { background: #F0EDE6; color: #96A3B0; }
 
+    .quiz-hog { background: #C8F0D8; color: #1A6B35; }
+    .quiz-mid { background: #FDF3C0; color: #8A6800; }
+    .quiz-lag { background: #FFD0CC; color: #C02010; }
+    .quiz-na  { background: #F0EDE6; color: #96A3B0; }
+
+    .quiz-snitt-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      height: 26px;
+      padding: 0 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .quiz-block { display: flex; flex-direction: column; gap: 3px; }
+    .quiz-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--mist);
+    }
+    .quiz-input {
+      border: 1px solid var(--fog);
+      border-radius: 5px;
+      padding: 5px 6px;
+      font-size: 12px;
+      font-family: inherit;
+      text-align: center;
+      font-weight: 700;
+      outline: none;
+    }
+    .quiz-input:focus { border-color: var(--slate); }
+
     textarea {
       width: 100%;
       border: 1px solid var(--fog);
@@ -287,6 +329,7 @@
       .oversikt-tabell th, .oversikt-tabell td { font-size: 12px; padding: 4px 2px; }
       .oversikt-tabell .betyg-select { width: 38px; height: 32px; font-size: 12px; }
       .oversikt-kom-grid { grid-template-columns: 1fr; }
+      .quiz-grid { grid-template-columns: repeat(2, 1fr); }
       .mobil-intern { display: block !important; }
       .spara-knapp { font-size: 14px; padding: 12px; }
       .header-title { font-size: 14px; }
@@ -305,9 +348,12 @@
 </div>
 
 <script>
+var QUIZ_FALLBACK = ['Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4', 'Quiz 5', 'Quiz 6'];
+
 var state = {
   elever: [],
   uppgifter: [],
+  quizomraden: [],
   expanderadElev: null,
   sparar: false,
   sparatOk: false,
@@ -318,12 +364,52 @@ var state = {
 google.script.run
   .withSuccessHandler(function(data) {
     if (data.fel) { visaFel(data.fel); return; }
-    state.elever    = data.elever;
-    state.uppgifter = data.uppgifter;
+    state.elever      = data.elever;
+    state.uppgifter   = data.uppgifter;
+    state.quizomraden = data.quizomraden || [];
     render();
   })
   .withFailureHandler(function(err) { visaFel(err.message); })
   .hamtaElevdata();
+
+// Tolkar ett fritextvärde ("80", "80%", "8/10") till en procentsats (0–100),
+// eller null om värdet inte går att tolka som poäng (t.ex. tomt).
+function parseQuizPercent(value) {
+  if (!value) return null;
+  var s = String(value).trim();
+  if (!s) return null;
+
+  var frac = s.match(/^(\d+(?:[.,]\d+)?)\s*\/\s*(\d+(?:[.,]\d+)?)$/);
+  if (frac) {
+    var num = parseFloat(frac[1].replace(',', '.'));
+    var den = parseFloat(frac[2].replace(',', '.'));
+    return den > 0 ? Math.round((num / den) * 100) : null;
+  }
+
+  var pct = s.match(/^(\d+(?:[.,]\d+)?)\s*%?$/);
+  if (pct) {
+    var v = parseFloat(pct[1].replace(',', '.'));
+    return Math.max(0, Math.min(100, Math.round(v)));
+  }
+
+  return null;
+}
+
+function quizKlass(pct) {
+  if (pct === null) return 'quiz-na';
+  if (pct >= 80) return 'quiz-hog';
+  if (pct >= 50) return 'quiz-mid';
+  return 'quiz-lag';
+}
+
+function quizGenomsnitt(quizArr) {
+  var varden = (quizArr || [])
+    .map(parseQuizPercent)
+    .filter(function(v) { return v !== null; });
+  if (!varden.length) return null;
+  var summa = varden.reduce(function(a, b) { return a + b; }, 0);
+  return Math.round(summa / varden.length);
+}
 
 function render() {
   var app = document.getElementById('app');
@@ -352,13 +438,14 @@ function renderVyOversikt(app) {
   state.uppgifter.forEach(function(u, i) {
     var th = el('th'); th.textContent = 'Prov ' + (i + 1); th.title = u; hr.appendChild(th);
   });
+  var thQuiz = el('th'); thQuiz.textContent = 'Quiz Ø'; thQuiz.title = 'Genomsnitt av quizresultat'; hr.appendChild(thQuiz);
   var thIntern = el('th', { className: 'intern-kol' }); thIntern.textContent = '🔒 Intern'; hr.appendChild(thIntern);
   thead.appendChild(hr);
   tbl.appendChild(thead);
 
   var tbody = el('tbody');
   if (state.expanderadElev !== null) tbody.className = 'fokus-aktiv';
-  var kolAntal = state.uppgifter.length + 2;
+  var kolAntal = state.uppgifter.length + 3;
 
   state.elever.forEach(function(elev, idx) {
     var expanderad = state.expanderadElev === idx;
@@ -378,6 +465,13 @@ function renderVyOversikt(app) {
       td.appendChild(betygSelect(b, function(val) { state.elever[idx].betyg[i] = val; delete state.skickatMejl[idx]; }));
       tr.appendChild(td);
     });
+
+    var quizSnitt = quizGenomsnitt(elev.quiz);
+    var tdQuiz = el('td');
+    var quizSnittBadge = el('span', { className: 'quiz-snitt-badge ' + quizKlass(quizSnitt) });
+    quizSnittBadge.textContent = quizSnitt === null ? '–' : (quizSnitt + '%');
+    tdQuiz.appendChild(quizSnittBadge);
+    tr.appendChild(tdQuiz);
 
     var tdIntern = el('td', { className: 'intern-cell' });
     var internTa = el('textarea');
@@ -404,6 +498,31 @@ function renderVyOversikt(app) {
         block.appendChild(ta);
         grid.appendChild(block);
       });
+
+      var quizWrap = el('div', { className: 'oversikt-kom-block' });
+      quizWrap.style.gridColumn = '1 / -1';
+      var quizWrapLbl = el('div', { className: 'oversikt-kom-label' }); quizWrapLbl.textContent = '🎯 Quiz-resultat'; quizWrap.appendChild(quizWrapLbl);
+      var quizGrid = el('div', { className: 'quiz-grid' });
+      var quizLabels = state.quizomraden.length ? state.quizomraden : QUIZ_FALLBACK;
+      quizLabels.forEach(function(qn, i) {
+        var qBlock = el('div', { className: 'quiz-block' });
+        var qLbl = el('div', { className: 'quiz-label' }); qLbl.textContent = qn; qBlock.appendChild(qLbl);
+        var qVal = (elev.quiz && elev.quiz[i]) || '';
+        var qInput = el('input', { className: 'quiz-input ' + quizKlass(parseQuizPercent(qVal)), type: 'text' });
+        qInput.placeholder = '–';
+        qInput.value = qVal;
+        qInput.addEventListener('click', function(e) { e.stopPropagation(); });
+        qInput.addEventListener('input', function() {
+          if (!state.elever[idx].quiz) state.elever[idx].quiz = [];
+          state.elever[idx].quiz[i] = this.value;
+          this.className = 'quiz-input ' + quizKlass(parseQuizPercent(this.value));
+          delete state.skickatMejl[idx];
+        });
+        qBlock.appendChild(qInput);
+        quizGrid.appendChild(qBlock);
+      });
+      quizWrap.appendChild(quizGrid);
+      grid.appendChild(quizWrap);
 
       var internMobilBlock = el('div', { className: 'oversikt-kom-block mobil-intern' });
       var internMobilLbl = el('div', { className: 'oversikt-kom-label' }); internMobilLbl.textContent = '🔒 Intern kommentar'; internMobilBlock.appendChild(internMobilLbl);

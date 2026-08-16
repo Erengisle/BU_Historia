@@ -76,9 +76,70 @@ function warnLevel_(results) {
   return 1;
 }
 
+// ── Quiz-hjälpfunktioner ──────────────────────────────────────────────────
+// Tolkar ett fritextvärde ("80", "80%", "8/10") till en procentsats (0–100),
+// eller null om värdet inte går att tolka som poäng (t.ex. tomt).
+function parseQuizPercent_(value) {
+  if (!value) return null;
+  var s = String(value).trim();
+  if (!s) return null;
+
+  var frac = s.match(/^(\d+(?:[.,]\d+)?)\s*\/\s*(\d+(?:[.,]\d+)?)$/);
+  if (frac) {
+    var num = parseFloat(frac[1].replace(',', '.'));
+    var den = parseFloat(frac[2].replace(',', '.'));
+    return den > 0 ? Math.round((num / den) * 100) : null;
+  }
+
+  var pct = s.match(/^(\d+(?:[.,]\d+)?)\s*%?$/);
+  if (pct) {
+    var v = parseFloat(pct[1].replace(',', '.'));
+    return Math.max(0, Math.min(100, Math.round(v)));
+  }
+
+  return null;
+}
+
+function quizColor_(pct) {
+  if (pct === null)  return { bg: '#F0EDE6', color: '#96A3B0' };
+  if (pct >= 80)      return { bg: '#E8F5EE', color: '#1A7A4A' };
+  if (pct >= 50)      return { bg: '#FDF8D0', color: '#A07800' };
+  return                     { bg: '#FDEAEA', color: '#B52020' };
+}
+
+function quizBadge_(text) {
+  var pct     = parseQuizPercent_(text);
+  var c       = quizColor_(pct);
+  var display = text ? text : '–';
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;' +
+    'min-width:40px;height:30px;padding:0 8px;border-radius:7px;white-space:nowrap;' +
+    'background:' + c.bg + ';font-family:Helvetica Neue,Arial,sans-serif;font-size:12px;' +
+    'font-weight:700;color:' + c.color + ';line-height:1;">' + display + '</span>';
+}
+
+// Bygger raderna för quiz-kortet (delas av mejlet och resultatsidan).
+function quizRader_(quiz) {
+  var rows = '';
+  QUIZOMRADEN.forEach(function(namn, i) {
+    var varde  = (quiz && quiz[i]) ? quiz[i] : '';
+    var isLast = (i === QUIZOMRADEN.length - 1);
+    rows +=
+      '<tr><td style="padding:10px 16px;' + (isLast ? '' : 'border-bottom:1px solid #DDD8D0;') + '">'
+        + '<table width="100%" cellpadding="0" cellspacing="0"><tr>'
+          + '<td width="48" style="vertical-align:middle;">' + quizBadge_(varde) + '</td>'
+          + '<td style="vertical-align:middle;padding-left:12px;">'
+            + '<p style="margin:0;font-size:13px;font-weight:600;color:#0F1B2D;">' + namn + '</p>'
+          + '</td>'
+        + '</tr></table>'
+      + '</td></tr>';
+  });
+  return rows;
+}
+
 // ── buildHtmlEmail ──────────────────────────────────────────────────────
 // resultUrl (valfri): länk till elevens personliga resultatsida
-function buildHtmlEmail(studentName, results, comments, resultUrl) {
+// quiz (valfri): array med quizresultat, matchade positionsvis mot QUIZOMRADEN
+function buildHtmlEmail(studentName, results, comments, resultUrl, quiz) {
 
   var count   = results.filter(function(r) { return ['E','C','A'].indexOf(r) !== -1; }).length;
   var tcBg    = count >= 3 ? '#E8F5EE' : (count === 2 ? '#FDF8D0' : '#FDEAEA');
@@ -112,6 +173,14 @@ function buildHtmlEmail(studentName, results, comments, resultUrl) {
       + '</td></tr>';
   });
 
+  var quizKortHtml =
+    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;overflow:hidden;margin-bottom:16px;">'
+      + '<tr><td style="padding:12px 16px 2px;">'
+        + '<p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#96A3B0;">Quiz-resultat</p>'
+      + '</td></tr>'
+      + quizRader_(quiz)
+    + '</table>';
+
   // Länkknapp till resultatsidan (om URL finns)
   var sidoLankHtml = resultUrl
     ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">'
@@ -140,6 +209,7 @@ function buildHtmlEmail(studentName, results, comments, resultUrl) {
         + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;overflow:hidden;margin-bottom:16px;">'
           + provRows
         + '</table>'
+        + quizKortHtml
         + sidoLankHtml
         + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;border:1px solid #DDD8D0;margin-bottom:8px;">'
         + '<tr><td style="padding:14px 16px;">'
@@ -156,7 +226,8 @@ function buildHtmlEmail(studentName, results, comments, resultUrl) {
 
 // ── buildResultatSida ────────────────────────────────────────────────────
 // Elevens personliga resultatsida — returnerar fullständig HTML-sträng
-function buildResultatSida(studentName, results, comments) {
+// quiz (valfri): array med quizresultat, matchade positionsvis mot QUIZOMRADEN
+function buildResultatSida(studentName, results, comments, quiz) {
 
   var count   = results.filter(function(r) { return ['E','C','A'].indexOf(r) !== -1; }).length;
   var tcBg    = count >= 3 ? '#E8F5EE' : (count === 2 ? '#FDF8D0' : '#FDEAEA');
@@ -177,6 +248,20 @@ function buildResultatSida(studentName, results, comments) {
         + '<div class="prov-text">'
           + '<div class="prov-namn">' + provNamn + '</div>'
           + (comment ? '<div class="prov-kommentar">' + comment + '</div>' : '')
+        + '</div>'
+      + '</div>';
+  });
+
+  // Quiz-rader
+  var quizRader = '';
+  QUIZOMRADEN.forEach(function(namn, i) {
+    var varde = (quiz && quiz[i]) ? quiz[i] : '';
+    var qc = quizColor_(parseQuizPercent_(varde));
+    quizRader +=
+      '<div class="prov-rad">'
+        + '<span class="quiz-badge" style="background:' + qc.bg + ';color:' + qc.color + ';">' + (varde || '–') + '</span>'
+        + '<div class="prov-text">'
+          + '<div class="prov-namn">' + namn + '</div>'
         + '</div>'
       + '</div>';
   });
@@ -204,6 +289,8 @@ function buildResultatSida(studentName, results, comments) {
       + '.prov-rad{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #DDD8D0}'
       + '.prov-rad:last-child{border-bottom:none}'
       + '.badge{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:7px;font-family:"Spectral",Georgia,serif;font-size:20px;font-weight:600;flex-shrink:0;line-height:1}'
+      + '.quiz-badge{display:flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:0 6px;border-radius:7px;font-family:"Space Grotesk",Helvetica Neue,Arial,sans-serif;font-size:13px;font-weight:700;flex-shrink:0;line-height:1}'
+      + '.kort-titel{padding:12px 16px 2px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#96A3B0}'
       + '.prov-text{padding-top:2px}'
       + '.prov-namn{font-size:14px;font-weight:600;color:#0F1B2D}'
       + '.prov-kommentar{margin-top:4px;font-size:12px;color:#556070;line-height:1.55}'
@@ -226,6 +313,7 @@ function buildResultatSida(studentName, results, comments) {
         + '<div class="trafikljus-label">' + tcLabel + '</div>'
       + '</div>'
       + '<div class="kort">' + provRader + '</div>'
+      + '<div class="kort"><div class="kort-titel">Quiz-resultat</div>' + quizRader + '</div>'
       + '<a class="cta-knapp" href="' + getOmprovUrl() + '">Anmäl dig till omprov →</a>'
       + '<div class="info-kort">'
         + '<p class="info-text">För godkänt på kursen krävs 3 av 5 godkända prov. Omprov planeras vid behov — alltid onsdagar kl. 14:45–16:15.</p>'
