@@ -102,7 +102,7 @@ function parseQuizPercent_(value) {
 
 function quizColor_(pct) {
   if (pct === null)  return { bg: '#F0EDE6', color: '#96A3B0' };
-  if (pct >= 80)      return { bg: '#E8F5EE', color: '#1A7A4A' };
+  if (pct >= 75)      return { bg: '#E8F5EE', color: '#1A7A4A' };
   if (pct >= 50)      return { bg: '#FDF8D0', color: '#A07800' };
   return                     { bg: '#FDEAEA', color: '#B52020' };
 }

@@ -397,7 +397,7 @@ function parseQuizPercent(value) {
 
 function quizKlass(pct) {
   if (pct === null) return 'quiz-na';
-  if (pct >= 80) return 'quiz-hog';
+  if (pct >= 75) return 'quiz-hog';
   if (pct >= 50) return 'quiz-mid';
   return 'quiz-lag';
 }
