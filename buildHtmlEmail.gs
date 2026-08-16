@@ -3,7 +3,7 @@
 // buildResultatSida — elevens personliga resultatsida (webb)
 // ============================================================
 
-// ── Delade hjälpfunktioner ────────────────────────────────────────────
+// ── Delade hjälpfunktioner ────────────────────────────────────────────────
 
 function gradeColor_(g) {
   if (g === 'A') return { bg: '#E8F5EE', color: '#1A7A4A' };
@@ -76,7 +76,7 @@ function warnLevel_(results) {
   return 1;
 }
 
-// ── buildHtmlEmail ──────────────────────────────────────────────
+// ── buildHtmlEmail ──────────────────────────────────────────────────────
 // resultUrl (valfri): länk till elevens personliga resultatsida
 function buildHtmlEmail(studentName, results, comments, resultUrl) {
 
@@ -154,7 +154,7 @@ function buildHtmlEmail(studentName, results, comments, resultUrl) {
   + '</body></html>';
 }
 
-// ── buildResultatSida ─────────────────────────────────────────────
+// ── buildResultatSida ────────────────────────────────────────────────────
 // Elevens personliga resultatsida — returnerar fullständig HTML-sträng
 function buildResultatSida(studentName, results, comments) {
 
@@ -203,7 +203,7 @@ function buildResultatSida(studentName, results, comments) {
       + '.kort{background:#fff;border:1px solid #DDD8D0;border-radius:12px;overflow:hidden;margin-bottom:14px}'
       + '.prov-rad{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid #DDD8D0}'
       + '.prov-rad:last-child{border-bottom:none}'
-      + '.badge{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:7px;font-family:"Spectral",Georgia,serif;font-size:20px;font-weight:600;flex-shrink:0}'
+      + '.badge{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:7px;font-family:"Spectral",Georgia,serif;font-size:20px;font-weight:600;flex-shrink:0;line-height:1}'
       + '.prov-text{padding-top:2px}'
       + '.prov-namn{font-size:14px;font-weight:600;color:#0F1B2D}'
       + '.prov-kommentar{margin-top:4px;font-size:12px;color:#556070;line-height:1.55}'
